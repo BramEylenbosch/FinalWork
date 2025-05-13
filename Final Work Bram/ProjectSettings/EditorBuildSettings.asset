@@ -9,7 +9,7 @@ EditorBuildSettings:
     path: Assets/Scenes/Home.unity
     guid: 60dd488dfc41fc140a9cde621f15878a
   - enabled: 1
-    path: Assets/Scenes/Memorygame.unity
+    path: Assets/Scenes/MemoryRandom.unity
     guid: fd6eba3682590494faff8b3380192078
   - enabled: 1
     path: Assets/Scenes/Notitieboek.unity
@@ -20,4 +20,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Handleidingen.unity
     guid: 44cb40cf9ab48e24ca702be938497020
+  - enabled: 1
+    path: Assets/Scenes/MemoryGameChoice.unity
+    guid: db6cfdae2a98a8046b8a9aa7f2a51bba
+  - enabled: 1
+    path: Assets/Scenes/MemoryCustom.unity
+    guid: 73786707cde66754e8eeaa82789edc32
   m_configObjects: {}
