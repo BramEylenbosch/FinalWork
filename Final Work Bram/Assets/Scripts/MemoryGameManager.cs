@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class MemoryGameManager : MonoBehaviour
 {
@@ -16,25 +17,49 @@ public class MemoryGameManager : MonoBehaviour
     private bool usePersonalPhotos = true; // Zorg dat je dit op true zet als je deze modus wilt
     public GameObject photoSetupPanel;
     public Transform photoPreviewGrid;
+    public Button startGameButton; // Sleep hier je Start Game button in de Inspector
     public GameObject photoThumbnailPrefab;
-void Start()
-{
-    string sceneName = SceneManager.GetActiveScene().name;
+    public static List<Sprite> savedPersonalPhotos = new();
 
-    if (sceneName == "MemoryCustom")
+    void Start()
     {
-        usePersonalPhotos = true;
-        cardGrid.gameObject.SetActive(false);
-        photoSetupPanel.SetActive(true);
+        string sceneName = SceneManager.GetActiveScene().name;
+
+        if (sceneName == "MemoryCustom")
+        {
+            usePersonalPhotos = true;
+            cardGrid.gameObject.SetActive(false);
+            photoSetupPanel.SetActive(true);
+
+            // ✅ Herstel opgeslagen foto's
+            if (savedPersonalPhotos.Count > 0)
+            {
+                personalPhotos = new List<Sprite>(savedPersonalPhotos);
+
+                // Toon thumbnails opnieuw
+                foreach (var photo in personalPhotos)
+                {
+                    GameObject thumbnail = Instantiate(photoThumbnailPrefab, photoPreviewGrid);
+                    thumbnail.GetComponent<Image>().sprite = photo;
+                }
+
+                // Activeer startknop als er genoeg foto's zijn
+                startGameButton.interactable = personalPhotos.Count >= 4;
+            }
+            else
+            {
+                startGameButton.interactable = false;
+            }
+        }
+        else
+        {
+            usePersonalPhotos = false;
+            CreateCards(); // standaard kaarten
+            cardGrid.gameObject.SetActive(true);
+            if (photoSetupPanel != null) photoSetupPanel.SetActive(false);
+        }
     }
-    else
-    {
-        usePersonalPhotos = false;
-        CreateCards(); // standaard kaarten
-        cardGrid.gameObject.SetActive(true);
-        if (photoSetupPanel != null) photoSetupPanel.SetActive(false);
-    }
-}
+
 
 
     void CreateCards()
@@ -115,8 +140,10 @@ void Start()
     }
     public void RestartGame()
     {
+        savedPersonalPhotos = new List<Sprite>(personalPhotos); // bewaar foto's
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
+
     public void AddPersonalPhoto(Sprite photo)
     {
         if (!personalPhotos.Contains(photo))
@@ -124,13 +151,28 @@ void Start()
             personalPhotos.Add(photo);
             Debug.Log("Foto toegevoegd: " + photo.name);
 
-            // Optioneel: herstart het spel om nieuwe kaarten te maken met deze foto’s
-            RestartWithNewPhotos();
+            // Toon thumbnail in setup UI
+            GameObject thumbnail = Instantiate(photoThumbnailPrefab, photoPreviewGrid);
+            thumbnail.GetComponent<Image>().sprite = photo;
+
+            // Zoek de verwijderknop en voeg een listener toe
+            Button removeBtn = thumbnail.transform.Find("RemoveButton").GetComponent<Button>();
+            removeBtn.onClick.AddListener(() => RemovePhoto(photo, thumbnail));
+
+            // ✅ Check of we genoeg foto's hebben
+            if (personalPhotos.Count >= 4)
+            {
+                startGameButton.interactable = true;
+            }
+            else
+            {
+                startGameButton.interactable = false;
+            }
         }
     }
 
     void RestartWithNewPhotos()
-    
+
     {
         cardGrid.gameObject.SetActive(true); // nu pas tonen
         // Ruim oude kaarten op
@@ -159,8 +201,8 @@ void Start()
     }
     public void StartGameWithPersonalPhotos()
     {
-            if (cardGrid.gameObject.activeSelf)
-        return; 
+        if (cardGrid.gameObject.activeSelf)
+            return;
         if (personalPhotos.Count < 4)
         {
             Debug.Log("Je moet minstens 4 foto's toevoegen.");
@@ -170,5 +212,19 @@ void Start()
         usePersonalPhotos = true;
         photoSetupPanel.SetActive(false); // verberg setup UI
         RestartWithNewPhotos();           // start spel
+    }
+    public void RemovePhoto(Sprite photoToRemove, GameObject thumbnail)
+    {
+        if (personalPhotos.Contains(photoToRemove))
+        {
+            personalPhotos.Remove(photoToRemove);
+            Destroy(thumbnail);
+
+            // Bewaar aangepaste lijst
+            savedPersonalPhotos = new List<Sprite>(personalPhotos);
+
+            // Check opnieuw of je genoeg foto's hebt
+            startGameButton.interactable = personalPhotos.Count >= 4;
+        }
     }
 }
