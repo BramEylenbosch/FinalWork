@@ -12,7 +12,7 @@ public class MemoryCard : MonoBehaviour
     {
         frontImage.sprite = image;
         cardId = id;
-        FlipBack();
+        FlipBackInstant(); // ← instant zonder animatie bij start
     }
 
     public void OnClick()
@@ -26,14 +26,35 @@ public class MemoryCard : MonoBehaviour
     public void FlipCard()
     {
         isFlipped = true;
-        frontImage.gameObject.SetActive(true);
-        backImage.gameObject.SetActive(false);
+
+        // Animate flip to front
+        LeanTween.scaleX(gameObject, 0f, 0.15f).setOnComplete(() =>
+        {
+            frontImage.gameObject.SetActive(true);
+            backImage.gameObject.SetActive(false);
+            LeanTween.scaleX(gameObject, 1f, 0.15f);
+        });
     }
 
     public void FlipBack()
     {
         isFlipped = false;
+
+        // Animate flip to back
+        LeanTween.scaleX(gameObject, 0f, 0.15f).setOnComplete(() =>
+        {
+            frontImage.gameObject.SetActive(false);
+            backImage.gameObject.SetActive(true);
+            LeanTween.scaleX(gameObject, 1f, 0.15f);
+        });
+    }
+
+    // Instant reset zonder animatie (voor Setup)
+    private void FlipBackInstant()
+    {
+        isFlipped = false;
         frontImage.gameObject.SetActive(false);
         backImage.gameObject.SetActive(true);
+        transform.localScale = Vector3.one;
     }
 }

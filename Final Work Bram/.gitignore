@@ -26,3 +26,7 @@ UserSettings/
 *.unitypackage
 .vscode/
 .idea/
+Assets/LeanTween/Documentation/
+Assets/LeanTween/Editor/
+Assets/LeanTween/Examples/
+Assets/LeanTween/Testing/
