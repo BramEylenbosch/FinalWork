@@ -3,6 +3,7 @@ using UnityEngine.UI;
 
 public class HandleidingViewer : MonoBehaviour
 {
+    public string mapNaam = "Microgolf"; // ← kies dit in de Inspector
     public Image paginaImage;
     public Button vorigeKnop;
     public Button volgendeKnop;
@@ -12,11 +13,11 @@ public class HandleidingViewer : MonoBehaviour
 
     void Start()
     {
-        paginas = Resources.LoadAll<Sprite>("Handleiding/Microgolf");
+        paginas = Resources.LoadAll<Sprite>("Handleiding/" + mapNaam);
 
         if (paginas.Length == 0)
         {
-            Debug.LogError("Geen pagina's gevonden in Resources/Handleiding!");
+            Debug.LogError("Geen pagina's gevonden in Resources/Handleiding/" + mapNaam);
             return;
         }
 
