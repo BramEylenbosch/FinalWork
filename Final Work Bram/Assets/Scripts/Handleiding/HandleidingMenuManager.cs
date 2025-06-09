@@ -31,6 +31,7 @@ public class HandleidingMenuManager : MonoBehaviour
         hoofdmenuPanel.SetActive(true);
         microgolfPanel.SetActive(false);
         koffiePanel.SetActive(false);
+        vaatwasserPanel.SetActive(false);
         // Zet hier ook andere panels uit als je er meer hebt
     }
 }
