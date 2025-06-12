@@ -2,118 +2,197 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
+using System.Collections.Generic;
+using System.IO;
 
 public class NotitieLijstManager : MonoBehaviour
 {
-    public Transform notitieContainer;         // ScrollView > Content
-    public GameObject notitiePrefab;           // Prefab met InputField, Verwijderknop, Fotoknop & RawImage
-    public TMP_InputField notitieInputField;   // Input bovenaan voor nieuwe notitie
+    [Header("UI Containers")]
+    public Transform notitieContainer;            // ScrollView > Content
+    public GameObject notitiePrefab;              // Prefab met InputField, DeleteButton, DatumText, FotoImage
 
-    public float hoogteNotitie = 100f;         // Hoogte van een notitie voor container berekening
+    [Header("Popup Elements")]
+    public GameObject popupPanel;
+    public TMP_InputField popupTekstInput;
+    public TMP_InputField popupDatumInput;
+    public RawImage popupFotoImage;
+    public Button popupFotoKiesButton;
+    public Button popupToevoegenButton;
+    public Button popupAnnulerenButton;
 
-    public void VoegNotitieToe()
+    [Header("Hoofdinterface")]
+    public GameObject scrollViewPanel;            // Hele scrollview of de Content parent
+    public GameObject nieuweNotitieKnop;          // De "Nieuwe Notitie"-knop
+    public GameObject hoofdtekstObject;
+
+    private NotitieDataLijst notitieDataLijst = new NotitieDataLijst();
+    private string gekozenFotoPad = "";
+
+    private const float yStart = 95f;
+    private const float ySpacing = 195f;
+
+    private void Start()
     {
-        string tekst = notitieInputField.text;
-        if (string.IsNullOrWhiteSpace(tekst)) return;
+        popupPanel.SetActive(false);
+        popupFotoKiesButton.onClick.AddListener(KiesFoto);
+        popupToevoegenButton.onClick.AddListener(VoegNotitieVanPopupToe);
+        popupAnnulerenButton.onClick.AddListener(SluitPopup);
 
-        GameObject nieuweNotitie = Instantiate(notitiePrefab, notitieContainer, false);
-
-        int index = notitieContainer.childCount - 1; // index van nieuwe notitie
-        float yPos = GetYPosForIndex(index);
-
-        RectTransform rt = nieuweNotitie.GetComponent<RectTransform>();
-        rt.anchoredPosition = new Vector2(0, yPos);
-
-        TMP_InputField inputField = nieuweNotitie.GetComponentInChildren<TMP_InputField>();
-        inputField.text = tekst;
-
-        Button deleteButton = nieuweNotitie.transform.Find("DeleteButton").GetComponent<Button>();
-        deleteButton.onClick.AddListener(() => VerwijderNotitie(nieuweNotitie));
-
-        RawImage fotoImage = nieuweNotitie.transform.Find("FotoImage").GetComponent<RawImage>();
-        Button fotoButton = nieuweNotitie.transform.Find("FotoButton").GetComponent<Button>();
-        fotoButton.onClick.AddListener(() => OpenGallery(fotoImage));
-
-        notitieInputField.text = "";
-
-        PasContainerHoogteAan();
+        LaadNotities();
     }
 
-    private void VerwijderNotitie(GameObject notitie)
+    public void OpenNotitiePopup()
     {
-        Destroy(notitie);
-        StartCoroutine(HerpositioneerNotities());
+        popupTekstInput.text = "";
+        popupDatumInput.text = "";
+        gekozenFotoPad = "";
+        popupFotoImage.texture = null;
+        popupFotoImage.gameObject.SetActive(false);
+
+        popupPanel.SetActive(true);
+        scrollViewPanel.SetActive(false);
+        nieuweNotitieKnop.SetActive(false);
+        hoofdtekstObject.SetActive(false);
     }
 
-    private IEnumerator HerpositioneerNotities()
+    private void SluitPopup()
     {
-        yield return new WaitForEndOfFrame();
-
-        int index = 0;
-        foreach (Transform child in notitieContainer)
-        {
-            RectTransform rt = child.GetComponent<RectTransform>();
-            rt.anchoredPosition = new Vector2(0, GetYPosForIndex(index));
-            index++;
-        }
-
-        PasContainerHoogteAan();
+        popupPanel.SetActive(false);
+        scrollViewPanel.SetActive(true);
+        nieuweNotitieKnop.SetActive(true);
+        hoofdtekstObject.SetActive(true);
     }
 
-    private float GetYPosForIndex(int index)
-    {
-        if (index == 0) return 175f;
-        if (index == 1) return -20f;
-
-        float afstand = 195f;
-        return -20f - (index - 1) * afstand;
-    }
-
-    private void PasContainerHoogteAan()
-    {
-        RectTransform containerRT = notitieContainer.GetComponent<RectTransform>();
-        int aantalNotities = notitieContainer.childCount;
-
-        if (aantalNotities == 0)
-            return;
-
-        float minY = float.MaxValue;
-        float maxY = float.MinValue;
-
-        for (int i = 0; i < aantalNotities; i++)
-        {
-            float y = GetYPosForIndex(i);
-            if (y < minY) minY = y;
-            if (y > maxY) maxY = y;
-        }
-
-        float hoogteNodig = maxY - minY + hoogteNotitie;
-        hoogteNodig = Mathf.Max(hoogteNodig, containerRT.rect.height);
-
-        containerRT.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, hoogteNodig);
-    }
-
-    private void OpenGallery(RawImage targetImage)
+    private void KiesFoto()
     {
 #if UNITY_ANDROID || UNITY_IOS
         NativeGallery.GetImageFromGallery((path) =>
         {
             if (path != null)
             {
+                gekozenFotoPad = path;
+
                 Texture2D texture = NativeGallery.LoadImageAtPath(path, 512);
                 if (texture != null)
                 {
-                    targetImage.texture = texture;
-                    targetImage.gameObject.SetActive(true);
-                }
-                else
-                {
-                    Debug.LogWarning("Kon afbeelding niet laden.");
+                    popupFotoImage.texture = texture;
+                    popupFotoImage.gameObject.SetActive(true);
                 }
             }
         }, "Kies een afbeelding");
-#else
-        Debug.Log("Foto's toevoegen werkt alleen op een mobiel toestel.");
 #endif
     }
+
+    private void VoegNotitieVanPopupToe()
+    {
+        string tekst = popupTekstInput.text;
+        if (string.IsNullOrWhiteSpace(tekst)) return;
+
+        NotitieData nieuweData = new NotitieData
+        {
+            tekst = tekst,
+            datum = popupDatumInput.text,
+            fotoPad = gekozenFotoPad
+        };
+
+        notitieDataLijst.notities.Add(nieuweData);
+        SlaNotitiesOp();
+        MaakNotitieUI(nieuweData);
+        SluitPopup();
+    }
+
+    private void MaakNotitieUI(NotitieData data)
+    {
+        GameObject nieuweNotitie = Instantiate(notitiePrefab, notitieContainer, false);
+        int index = notitieContainer.childCount - 1;
+
+        RectTransform rt = nieuweNotitie.GetComponent<RectTransform>();
+        rt.anchoredPosition = new Vector2(0, yStart - index * ySpacing);
+
+        nieuweNotitie.GetComponentInChildren<TMP_InputField>().text = data.tekst;
+
+        TMP_Text datumText = nieuweNotitie.transform.Find("DatumText")?.GetComponent<TMP_Text>();
+        if (datumText != null) datumText.text = data.datum;
+
+        RawImage fotoImage = nieuweNotitie.transform.Find("FotoImage")?.GetComponent<RawImage>();
+        if (!string.IsNullOrEmpty(data.fotoPad) && fotoImage != null)
+        {
+            Texture2D texture = NativeGallery.LoadImageAtPath(data.fotoPad, 512);
+            if (texture != null)
+            {
+                fotoImage.texture = texture;
+                fotoImage.gameObject.SetActive(true);
+            }
+        }
+
+        Button deleteButton = nieuweNotitie.transform.Find("DeleteButton").GetComponent<Button>();
+        deleteButton.onClick.AddListener(() =>
+        {
+            VerwijderNotitie(nieuweNotitie, data);
+        });
+
+        PasContainerHoogteAan();
+    }
+
+    private void VerwijderNotitie(GameObject notitie, NotitieData data)
+    {
+        Destroy(notitie);
+        notitieDataLijst.notities.Remove(data);
+        SlaNotitiesOp();
+        StartCoroutine(HerpositioneerNotities());
+    }
+
+    private IEnumerator HerpositioneerNotities()
+    {
+        yield return null; // wacht 1 frame
+        int index = 0;
+        foreach (Transform child in notitieContainer)
+        {
+            RectTransform rt = child.GetComponent<RectTransform>();
+            rt.anchoredPosition = new Vector2(0, yStart - index * ySpacing);
+            index++;
+        }
+        PasContainerHoogteAan();
+    }
+
+    private void PasContainerHoogteAan()
+    {
+        RectTransform containerRT = notitieContainer.GetComponent<RectTransform>();
+        float hoogte = notitieDataLijst.notities.Count * ySpacing + 200;
+        containerRT.sizeDelta = new Vector2(containerRT.sizeDelta.x, hoogte);
+    }
+
+    private void SlaNotitiesOp()
+    {
+        string json = JsonUtility.ToJson(notitieDataLijst);
+        PlayerPrefs.SetString("notities", json);
+        PlayerPrefs.Save();
+    }
+
+    private void LaadNotities()
+    {
+        if (!PlayerPrefs.HasKey("notities")) return;
+
+        string json = PlayerPrefs.GetString("notities");
+        notitieDataLijst = JsonUtility.FromJson<NotitieDataLijst>(json);
+
+        foreach (var data in notitieDataLijst.notities)
+        {
+            MaakNotitieUI(data);
+        }
+    }
+}
+
+[System.Serializable]
+public class NotitieData
+{
+    public string tekst;
+    public string datum;
+    public string fotoPad;
+}
+
+[System.Serializable]
+public class NotitieDataLijst
+{
+    public List<NotitieData> notities = new List<NotitieData>();
 }
