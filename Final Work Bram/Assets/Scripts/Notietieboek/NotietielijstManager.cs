@@ -3,13 +3,12 @@ using UnityEngine.UI;
 using TMPro;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 
 public class NotitieLijstManager : MonoBehaviour
 {
     [Header("UI Containers")]
     public Transform notitieContainer;            // ScrollView > Content
-    public GameObject notitiePrefab;              // Prefab met InputField, DeleteButton, DatumText, FotoImage
+    public GameObject notitiePrefab;              // Prefab met TMP_Text (NotitieTekst), DeleteButton, DatumText, FotoImage
 
     [Header("Popup Elements")]
     public GameObject popupPanel;
@@ -109,7 +108,18 @@ public class NotitieLijstManager : MonoBehaviour
         RectTransform rt = nieuweNotitie.GetComponent<RectTransform>();
         rt.anchoredPosition = new Vector2(0, yStart - index * ySpacing);
 
-        nieuweNotitie.GetComponentInChildren<TMP_InputField>().text = data.tekst;
+        // Zoek het TMP_Text component in de prefab child "NotitieTekst"
+        TMP_Text notitieTekst = nieuweNotitie.transform.Find("NotitieTekst")?.GetComponent<TMP_Text>();
+
+        if (notitieTekst != null)
+        {
+            Debug.Log("NotitieTekst wordt gezet op: " + data.tekst);
+            notitieTekst.text = string.IsNullOrEmpty(data.tekst) ? "" : data.tekst;
+        }
+        else
+        {
+            Debug.LogWarning("NotitieTekst component niet gevonden in prefab!");
+        }
 
         TMP_Text datumText = nieuweNotitie.transform.Find("DatumText")?.GetComponent<TMP_Text>();
         if (datumText != null) datumText.text = data.datum;

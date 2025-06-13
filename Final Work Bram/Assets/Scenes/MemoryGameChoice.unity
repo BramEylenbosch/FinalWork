@@ -551,6 +551,18 @@ PrefabInstance:
       propertyPath: m_hasFontAssetChanged
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3438228453923885025, guid: 144b8a89684683249b033cd9f0f114f5, type: 3}
+      propertyPath: m_Color.b
+      value: 0.6392157
+      objectReference: {fileID: 0}
+    - target: {fileID: 3438228453923885025, guid: 144b8a89684683249b033cd9f0f114f5, type: 3}
+      propertyPath: m_Color.g
+      value: 0.972549
+      objectReference: {fileID: 0}
+    - target: {fileID: 3438228453923885025, guid: 144b8a89684683249b033cd9f0f114f5, type: 3}
+      propertyPath: m_Color.r
+      value: 0.9843137
+      objectReference: {fileID: 0}
     - target: {fileID: 3845327919832312482, guid: 144b8a89684683249b033cd9f0f114f5, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
