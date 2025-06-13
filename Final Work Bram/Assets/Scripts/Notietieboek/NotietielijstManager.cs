@@ -7,8 +7,8 @@ using System.Collections.Generic;
 public class NotitieLijstManager : MonoBehaviour
 {
     [Header("UI Containers")]
-    public Transform notitieContainer;            // ScrollView > Content
-    public GameObject notitiePrefab;              // Prefab met TMP_Text (NotitieTekst), DeleteButton, DatumText, FotoImage
+    public Transform notitieContainer;      
+    public GameObject notitiePrefab;           
 
     [Header("Popup Elements")]
     public GameObject popupPanel;
@@ -20,8 +20,8 @@ public class NotitieLijstManager : MonoBehaviour
     public Button popupAnnulerenButton;
 
     [Header("Hoofdinterface")]
-    public GameObject scrollViewPanel;            // Hele scrollview of de Content parent
-    public GameObject nieuweNotitieKnop;          // De "Nieuwe Notitie"-knop
+    public GameObject scrollViewPanel;           
+    public GameObject nieuweNotitieKnop;          
     public GameObject hoofdtekstObject;
 
     private NotitieDataLijst notitieDataLijst = new NotitieDataLijst();
@@ -108,7 +108,6 @@ public class NotitieLijstManager : MonoBehaviour
         RectTransform rt = nieuweNotitie.GetComponent<RectTransform>();
         rt.anchoredPosition = new Vector2(0, yStart - index * ySpacing);
 
-        // Zoek het TMP_Text component in de prefab child "NotitieTekst"
         TMP_Text notitieTekst = nieuweNotitie.transform.Find("NotitieTekst")?.GetComponent<TMP_Text>();
 
         if (notitieTekst != null)
@@ -154,7 +153,7 @@ public class NotitieLijstManager : MonoBehaviour
 
     private IEnumerator HerpositioneerNotities()
     {
-        yield return null; // wacht 1 frame
+        yield return null;
         int index = 0;
         foreach (Transform child in notitieContainer)
         {

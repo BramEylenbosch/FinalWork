@@ -7,7 +7,6 @@ public class HandleidingMenuManager : MonoBehaviour
     public GameObject koffiePanel;
     public GameObject vaatwasserPanel;
     
-    // Voeg meer panelen toe als je meer apparaten hebt
 
     public void OpenMicrogolf()
     {
@@ -32,6 +31,5 @@ public class HandleidingMenuManager : MonoBehaviour
         microgolfPanel.SetActive(false);
         koffiePanel.SetActive(false);
         vaatwasserPanel.SetActive(false);
-        // Zet hier ook andere panels uit als je er meer hebt
     }
 }

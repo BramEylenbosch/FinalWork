@@ -12,7 +12,7 @@ public class MemoryCard : MonoBehaviour
     {
         frontImage.sprite = image;
         cardId = id;
-        FlipBackInstant(); // ← instant zonder animatie bij start
+        FlipBackInstant();
     }
 
     public void OnClick()
@@ -49,7 +49,6 @@ public class MemoryCard : MonoBehaviour
         });
     }
 
-    // Instant reset zonder animatie (voor Setup)
     private void FlipBackInstant()
     {
         isFlipped = false;

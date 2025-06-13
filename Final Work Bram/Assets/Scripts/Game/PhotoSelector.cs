@@ -4,9 +4,8 @@ using UnityEngine.UI;
 
 public class PhotoSelector : MonoBehaviour
 {
-    public MemoryGameManager gameManager; // sleep hier je MemoryGameManager in inspector
+    public MemoryGameManager gameManager;
 
-    // Aanroepen via UI Button
     public void PickPhotoFromGallery()
     {
         StartCoroutine(PickImageRoutine());
@@ -32,7 +31,7 @@ public class PhotoSelector : MonoBehaviour
             }
         }, "Kies een foto", "image/*");
 
-        // wacht tot klaar
+
         while (NativeGallery.IsMediaPickerBusy())
             yield return null;
     }

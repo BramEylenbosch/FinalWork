@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 public class HandleidingViewer : MonoBehaviour
 {
-    public string mapNaam = "Microgolf"; // ← kies dit in de Inspector
+    public string mapNaam = "Microgolf";
     public Image paginaImage;
     public Button vorigeKnop;
     public Button volgendeKnop;

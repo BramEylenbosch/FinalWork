@@ -3,8 +3,8 @@ using UnityEngine.UI;
 
 public class TaakItem : MonoBehaviour
 {
-    public Text taakText;          // Sleep hier de Text component naartoe in Inspector
-    public Button verwijderKnop;   // Sleep hier de Button naartoe
+    public Text taakText;    
+    public Button verwijderKnop; 
 
     private void Start()
     {

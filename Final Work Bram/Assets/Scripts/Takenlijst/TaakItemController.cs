@@ -26,7 +26,6 @@ public class TaakItemController : MonoBehaviour
         voltooidToggle.onValueChanged.RemoveAllListeners();
         voltooidToggle.onValueChanged.AddListener(OnToggleChanged);
 
-        // Init style
         OnToggleChanged(voltooidToggle.isOn);
     }
 
