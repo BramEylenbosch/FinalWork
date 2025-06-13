@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using TMPro;
 
 public class MemoryGameManager : MonoBehaviour
 {
@@ -20,6 +21,8 @@ public class MemoryGameManager : MonoBehaviour
     public Button startGameButton; // Sleep hier je Start Game button in de Inspector
     public GameObject photoThumbnailPrefab;
     public static List<Sprite> savedPersonalPhotos = new();
+    public TextMeshProUGUI uitlegTekst;
+
 
     void Start()
     {
@@ -41,10 +44,15 @@ public class MemoryGameManager : MonoBehaviour
                 {
                     GameObject thumbnail = Instantiate(photoThumbnailPrefab, photoPreviewGrid);
                     thumbnail.GetComponent<Image>().sprite = photo;
+
+                    // Voeg ook verwijderknop listener toe bij laden
+                    Button removeBtn = thumbnail.transform.Find("RemoveButton").GetComponent<Button>();
+                    Sprite capturedPhoto = photo; // lokale kopie voor lambda
+                    removeBtn.onClick.AddListener(() => RemovePhoto(capturedPhoto, thumbnail));
                 }
 
-                // Activeer startknop als er genoeg foto's zijn
-                startGameButton.interactable = personalPhotos.Count >= 4;
+                // Activeer startknop als er tussen 2 en 8 foto's zijn
+                startGameButton.interactable = personalPhotos.Count >= 2 && personalPhotos.Count <= 8;
             }
             else
             {
@@ -60,8 +68,6 @@ public class MemoryGameManager : MonoBehaviour
         }
     }
 
-
-
     void CreateCards()
     {
         List<int> ids = new();
@@ -71,7 +77,7 @@ public class MemoryGameManager : MonoBehaviour
             ids.Add(i); // dubbel voor paren
         }
 
-        totalPairs = cardImages.Length; // ✅ vul hier het totaal aantal paren in (bv. 8)
+        totalPairs = cardImages.Length; // bv. 8
         Shuffle(ids);
 
         foreach (int id in ids)
@@ -88,7 +94,6 @@ public class MemoryGameManager : MonoBehaviour
         {
             int rnd = Random.Range(i, list.Count);
             (list[i], list[rnd]) = (list[rnd], list[i]);
-
         }
     }
 
@@ -127,7 +132,7 @@ public class MemoryGameManager : MonoBehaviour
     {
         pairsFound++;
 
-        if (pairsFound >= totalPairs) // bv. 8 voor 16 kaarten
+        if (pairsFound >= totalPairs)
         {
             ShowWinPanel();
         }
@@ -138,6 +143,7 @@ public class MemoryGameManager : MonoBehaviour
         winPanel.SetActive(true);
         // Je kunt hier ook geluid afspelen of andere effecten
     }
+
     public void RestartGame()
     {
         savedPersonalPhotos = new List<Sprite>(personalPhotos); // bewaar foto's
@@ -146,6 +152,12 @@ public class MemoryGameManager : MonoBehaviour
 
     public void AddPersonalPhoto(Sprite photo)
     {
+        if (personalPhotos.Count >= 8)
+        {
+            Debug.Log("Maximaal 8 foto's toegestaan.");
+            return;
+        }
+
         if (!personalPhotos.Contains(photo))
         {
             personalPhotos.Add(photo);
@@ -159,20 +171,12 @@ public class MemoryGameManager : MonoBehaviour
             Button removeBtn = thumbnail.transform.Find("RemoveButton").GetComponent<Button>();
             removeBtn.onClick.AddListener(() => RemovePhoto(photo, thumbnail));
 
-            // ✅ Check of we genoeg foto's hebben
-            if (personalPhotos.Count >= 4)
-            {
-                startGameButton.interactable = true;
-            }
-            else
-            {
-                startGameButton.interactable = false;
-            }
+            // Startknop actief tussen 2 en 8 kaarten
+            startGameButton.interactable = personalPhotos.Count >= 2 && personalPhotos.Count <= 8;
         }
     }
 
     void RestartWithNewPhotos()
-
     {
         cardGrid.gameObject.SetActive(true); // nu pas tonen
         // Ruim oude kaarten op
@@ -199,20 +203,33 @@ public class MemoryGameManager : MonoBehaviour
             card.Setup(personalPhotos[id], id);
         }
     }
+
     public void StartGameWithPersonalPhotos()
     {
         if (cardGrid.gameObject.activeSelf)
             return;
-        if (personalPhotos.Count < 4)
+
+        if (personalPhotos.Count < 2)
         {
-            Debug.Log("Je moet minstens 4 foto's toevoegen.");
+            Debug.Log("Je moet minstens 2 foto's toevoegen.");
+            return;
+        }
+        if (personalPhotos.Count > 8)
+        {
+            Debug.Log("Maximaal 8 foto's toegestaan.");
             return;
         }
 
         usePersonalPhotos = true;
         photoSetupPanel.SetActive(false); // verberg setup UI
+
+        if (uitlegTekst != null)
+            uitlegTekst.gameObject.SetActive(false); // verberg uitleg
+
         RestartWithNewPhotos();           // start spel
     }
+
+
     public void RemovePhoto(Sprite photoToRemove, GameObject thumbnail)
     {
         if (personalPhotos.Contains(photoToRemove))
@@ -224,7 +241,7 @@ public class MemoryGameManager : MonoBehaviour
             savedPersonalPhotos = new List<Sprite>(personalPhotos);
 
             // Check opnieuw of je genoeg foto's hebt
-            startGameButton.interactable = personalPhotos.Count >= 4;
+            startGameButton.interactable = personalPhotos.Count >= 2 && personalPhotos.Count <= 8;
         }
     }
 }
