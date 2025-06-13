@@ -17,7 +17,7 @@ public class TaakItemController : MonoBehaviour
     public void Setup(string tekst, string deadline, Action<TaakItemController> onDelete)
     {
         taakText.text = tekst;
-        deadlineText.text = string.IsNullOrEmpty(deadline) ? "" : $"Deadline: {deadline}";
+        deadlineText.text = string.IsNullOrEmpty(deadline) ? "" : $"{deadline}";
         this.onDelete = onDelete;
 
         deleteButton.onClick.RemoveAllListeners();

@@ -36,7 +36,7 @@ public class TaaklijstManager : MonoBehaviour
 
     private float yStart = 95f;
     private float ySpacing = 195f;
-    
+
     private void Start()
     {
         openTaakPanelKnop.onClick.RemoveAllListeners();
