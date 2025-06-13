@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class TaaklijstManager : MonoBehaviour
 {
@@ -9,6 +10,12 @@ public class TaaklijstManager : MonoBehaviour
     public GameObject taakItemPrefab;
     public TMP_InputField taakInputField;
     public TMP_InputField deadlineInputField;
+
+    [Header("Panel en knoppen")]
+    public GameObject taakToevoegPanel;
+    public Button openTaakPanelKnop;
+    public Button bevestigToevoegenKnop;
+    public Button annuleerToevoegenKnop;
 
     private List<TaakItemController> taakItems = new();
     private List<TaakData> takenLijst = new();
@@ -27,9 +34,43 @@ public class TaaklijstManager : MonoBehaviour
         public List<TaakData> taken;
     }
 
+    private float yStart = 95f;
+    private float ySpacing = 195f;
+    
     private void Start()
     {
+        openTaakPanelKnop.onClick.RemoveAllListeners();
+        openTaakPanelKnop.onClick.AddListener(OpenToevoegPanel);
+
+        bevestigToevoegenKnop.onClick.RemoveAllListeners();
+        bevestigToevoegenKnop.onClick.AddListener(BevestigTaakToevoegen);
+
+        annuleerToevoegenKnop.onClick.RemoveAllListeners();
+        annuleerToevoegenKnop.onClick.AddListener(SluitToevoegPanel);
+
+        taakToevoegPanel.SetActive(false);
         LaadTaken();
+    }
+
+
+    private void OpenToevoegPanel()
+    {
+        taakToevoegPanel.SetActive(true);
+        taakContainer.gameObject.SetActive(false);
+    }
+
+    private void SluitToevoegPanel()
+    {
+        taakToevoegPanel.SetActive(false);
+        taakInputField.text = "";
+        deadlineInputField.text = "";
+        taakContainer.gameObject.SetActive(true);
+    }
+
+    private void BevestigTaakToevoegen()
+    {
+        VoegTaakToe();
+        SluitToevoegPanel();
     }
 
     public void VoegTaakToe()
@@ -49,9 +90,6 @@ public class TaaklijstManager : MonoBehaviour
         takenLijst.Add(nieuweTaakData);
         MaakTaakItem(nieuweTaakData);
 
-        taakInputField.text = "";
-        deadlineInputField.text = "";
-
         SlaTakenOp();
     }
 
@@ -67,6 +105,11 @@ public class TaaklijstManager : MonoBehaviour
             SlaTakenOp();
         };
         taakItems.Add(taakItem);
+
+        int index = taakItems.Count - 1;
+        Vector3 pos = taakGO.transform.localPosition;
+        pos.y = yStart - index * ySpacing;
+        taakGO.transform.localPosition = pos;
     }
 
     private void VerwijderTaak(TaakItemController taakItem)
@@ -91,7 +134,6 @@ public class TaaklijstManager : MonoBehaviour
 
     public void LaadTaken()
     {
-        // Eerst alle oude taakitems verwijderen uit de UI
         foreach (var taakItem in taakItems)
         {
             Destroy(taakItem.gameObject);
@@ -114,6 +156,4 @@ public class TaaklijstManager : MonoBehaviour
             }
         }
     }
-
-
 }
