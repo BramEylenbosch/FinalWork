@@ -57,6 +57,7 @@ public class TaaklijstManager : MonoBehaviour
     {
         taakToevoegPanel.SetActive(true);
         taakContainer.gameObject.SetActive(false);
+        openTaakPanelKnop.gameObject.SetActive(false);
     }
 
     private void SluitToevoegPanel()
@@ -65,6 +66,7 @@ public class TaaklijstManager : MonoBehaviour
         taakInputField.text = "";
         deadlineInputField.text = "";
         taakContainer.gameObject.SetActive(true);
+        openTaakPanelKnop.gameObject.SetActive(true);
     }
 
     private void BevestigTaakToevoegen()
