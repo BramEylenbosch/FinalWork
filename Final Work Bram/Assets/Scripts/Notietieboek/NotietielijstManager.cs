@@ -1,8 +1,10 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using DatePicker;
 
 public class NotitieLijstManager : MonoBehaviour
 {
@@ -13,11 +15,12 @@ public class NotitieLijstManager : MonoBehaviour
     [Header("Popup Elements")]
     public GameObject popupPanel;
     public TMP_InputField popupTekstInput;
-    public TMP_InputField popupDatumInput;
+    public TMP_InputField popupDatumInput; // alleen display
     public RawImage popupFotoImage;
     public Button popupFotoKiesButton;
     public Button popupToevoegenButton;
     public Button popupAnnulerenButton;
+    public Button popupDatumKiesButton; // aparte knop voor picker
 
     [Header("Hoofdinterface")]
     public GameObject scrollViewPanel;           
@@ -26,6 +29,9 @@ public class NotitieLijstManager : MonoBehaviour
 
     private NotitieDataLijst notitieDataLijst = new NotitieDataLijst();
     private string gekozenFotoPad = "";
+    private string geselecteerdeDatum = "";
+
+    private IDatePicker _datePicker;
 
     private const float yStart = 95f;
     private const float ySpacing = 195f;
@@ -33,20 +39,32 @@ public class NotitieLijstManager : MonoBehaviour
     private void Start()
     {
         popupPanel.SetActive(false);
+
         popupFotoKiesButton.onClick.AddListener(KiesFoto);
         popupToevoegenButton.onClick.AddListener(VoegNotitieVanPopupToe);
         popupAnnulerenButton.onClick.AddListener(SluitPopup);
+        popupDatumKiesButton.onClick.AddListener(OpenDatePicker);
+
+#if UNITY_EDITOR
+        _datePicker = new UnityEditorCalendar();
+#elif UNITY_ANDROID
+        _datePicker = new DatePicker.AndroidDatePicker();
+#endif
 
         LaadNotities();
     }
 
     public void OpenNotitiePopup()
     {
-        popupTekstInput.text = "";
+        // Reset notitie-tekst en foto
+        // popupTekstInput.text = "";
+        // gekozenFotoPad = "";
+        // popupFotoImage.texture = null;
+        // popupFotoImage.gameObject.SetActive(false);
+
+        // Reset datum placeholder
+        geselecteerdeDatum = "";
         popupDatumInput.text = "";
-        gekozenFotoPad = "";
-        popupFotoImage.texture = null;
-        popupFotoImage.gameObject.SetActive(false);
 
         popupPanel.SetActive(true);
         scrollViewPanel.SetActive(false);
@@ -82,15 +100,28 @@ public class NotitieLijstManager : MonoBehaviour
 #endif
     }
 
+    private void OpenDatePicker()
+    {
+        _datePicker?.Show(DateTime.Now, OnDatumGekozen);
+    }
+
+    private void OnDatumGekozen(DateTime value)
+    {
+        geselecteerdeDatum = value.ToString("dd-MM-yyyy");
+        popupDatumInput.text = geselecteerdeDatum;
+
+        popupDatumInput.ForceLabelUpdate();
+    }
+
     private void VoegNotitieVanPopupToe()
     {
-        string tekst = popupTekstInput.text;
-        if (string.IsNullOrWhiteSpace(tekst)) return;
+        string tekst = popupTekstInput.text.Trim();
+        if (string.IsNullOrEmpty(tekst)) return;
 
         NotitieData nieuweData = new NotitieData
         {
             tekst = tekst,
-            datum = popupDatumInput.text,
+            datum = geselecteerdeDatum, 
             fotoPad = gekozenFotoPad
         };
 
@@ -109,19 +140,10 @@ public class NotitieLijstManager : MonoBehaviour
         rt.anchoredPosition = new Vector2(0, yStart - index * ySpacing);
 
         TMP_Text notitieTekst = nieuweNotitie.transform.Find("NotitieTekst")?.GetComponent<TMP_Text>();
- 
-        if (notitieTekst != null)
-        {
-            Debug.Log("NotitieTekst wordt gezet op: " + data.tekst); 
-            notitieTekst.text = string.IsNullOrEmpty(data.tekst) ? "" : data.tekst;                 
-        }
-        else
-        {
-            Debug.LogWarning("NotitieTekst component niet gevonden in prefab!");
-        }
+        if (notitieTekst != null) notitieTekst.text = data.tekst;
 
         TMP_Text datumText = nieuweNotitie.transform.Find("DatumText")?.GetComponent<TMP_Text>();
-        if (datumText != null) datumText.text = data.datum;
+        if (datumText != null) datumText.text = string.IsNullOrEmpty(data.datum) ? "Geen datum gekozen" : data.datum;
 
         RawImage fotoImage = nieuweNotitie.transform.Find("FotoImage")?.GetComponent<RawImage>();
         if (!string.IsNullOrEmpty(data.fotoPad) && fotoImage != null)
@@ -205,3 +227,13 @@ public class NotitieDataLijst
 {
     public List<NotitieData> notities = new List<NotitieData>();
 }
+
+#if UNITY_EDITOR
+class UnityEditorCalendar : IDatePicker
+{
+    public void Show(DateTime initDate, Action<DateTime> callback)
+    {
+        callback?.Invoke(initDate);
+    }
+}
+#endif

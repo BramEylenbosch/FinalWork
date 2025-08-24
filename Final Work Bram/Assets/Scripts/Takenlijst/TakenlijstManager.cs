@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using DatePicker;
 
 public class TaaklijstManager : MonoBehaviour
 {
@@ -9,7 +11,6 @@ public class TaaklijstManager : MonoBehaviour
     public Transform taakContainer;
     public GameObject taakItemPrefab;
     public TMP_InputField taakInputField;
-    public TMP_InputField deadlineInputField;
 
     [Header("Panel en knoppen")]
     public GameObject taakToevoegPanel;
@@ -17,8 +18,15 @@ public class TaaklijstManager : MonoBehaviour
     public Button bevestigToevoegenKnop;
     public Button annuleerToevoegenKnop;
 
+    [Header("Datum kiezen")]
+    public Button kiesDatumKnop;
+    public TextMeshProUGUI gekozenDatumText;
+
     private List<TaakItemController> taakItems = new();
     private List<TaakData> takenLijst = new();
+
+    private IDatePicker _datePicker;
+    private string geselecteerdeDatum = "";
 
     [System.Serializable]
     public class TaakData
@@ -39,6 +47,7 @@ public class TaaklijstManager : MonoBehaviour
 
     private void Start()
     {
+        // Knoppen listeners instellen
         openTaakPanelKnop.onClick.RemoveAllListeners();
         openTaakPanelKnop.onClick.AddListener(OpenToevoegPanel);
 
@@ -48,44 +57,53 @@ public class TaaklijstManager : MonoBehaviour
         annuleerToevoegenKnop.onClick.RemoveAllListeners();
         annuleerToevoegenKnop.onClick.AddListener(SluitToevoegPanel);
 
+        // DatePicker instellen
+#if UNITY_EDITOR
+        _datePicker = new UnityEditorCalendar();
+#elif UNITY_ANDROID
+        _datePicker = new DatePicker.AndroidDatePicker();
+#endif
+
+        kiesDatumKnop.onClick.RemoveAllListeners();
+        kiesDatumKnop.onClick.AddListener(OpenDatePicker);
+
         taakToevoegPanel.SetActive(false);
         LaadTaken();
     }
-
 
     private void OpenToevoegPanel()
     {
         taakToevoegPanel.SetActive(true);
         taakContainer.gameObject.SetActive(false);
         openTaakPanelKnop.gameObject.SetActive(false);
+
+        // Reset invoervelden
+        taakInputField.text = "";
+        geselecteerdeDatum = "";
+        gekozenDatumText.text = "Geen datum gekozen";
     }
 
     private void SluitToevoegPanel()
     {
         taakToevoegPanel.SetActive(false);
         taakInputField.text = "";
-        deadlineInputField.text = "";
+        geselecteerdeDatum = "";
+        gekozenDatumText.text = "Geen datum gekozen";
+
         taakContainer.gameObject.SetActive(true);
         openTaakPanelKnop.gameObject.SetActive(true);
     }
 
     private void BevestigTaakToevoegen()
     {
-        VoegTaakToe();
-        SluitToevoegPanel();
-    }
-
-    public void VoegTaakToe()
-    {
         string nieuweTaak = taakInputField.text.Trim();
-        string deadline = deadlineInputField.text.Trim();
 
         if (string.IsNullOrEmpty(nieuweTaak)) return;
 
         TaakData nieuweTaakData = new TaakData
         {
             tekst = nieuweTaak,
-            deadline = deadline,
+            deadline = string.IsNullOrEmpty(geselecteerdeDatum) ? "" : geselecteerdeDatum,
             voltooid = false
         };
 
@@ -93,6 +111,19 @@ public class TaaklijstManager : MonoBehaviour
         MaakTaakItem(nieuweTaakData);
 
         SlaTakenOp();
+        SluitToevoegPanel();
+    }
+
+    private void OpenDatePicker()
+    {
+        _datePicker?.Show(DateTime.Now, OnDateSelected);
+    }
+
+    private void OnDateSelected(DateTime value)
+    {
+        geselecteerdeDatum = value.ToString("dd-MM-yyyy");
+        gekozenDatumText.text = geselecteerdeDatum;
+        Debug.Log("Datum gekozen: " + geselecteerdeDatum);
     }
 
     private void MaakTaakItem(TaakData taakData)
@@ -159,3 +190,14 @@ public class TaaklijstManager : MonoBehaviour
         }
     }
 }
+
+#if UNITY_EDITOR
+// Mock klasse om in de Editor te kunnen testen
+class UnityEditorCalendarTaak : IDatePicker
+{
+    public void Show(DateTime initDate, Action<DateTime> callback)
+    {
+        callback?.Invoke(initDate);
+    }
+}
+#endif
