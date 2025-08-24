@@ -1,33 +1,35 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class MemoryCard : MonoBehaviour
 {
     public int cardId;
     public Image frontImage;
     public Image backImage;
+    public TMP_Text naamText; // label
+
     private bool isFlipped = false;
 
-    public void Setup(Sprite image, int id)
+    public void Setup(Sprite image, int id, string naam = "")
     {
         frontImage.sprite = image;
         cardId = id;
+        if (naamText != null)
+            naamText.text = naam;
+
         FlipBackInstant();
     }
 
     public void OnClick()
     {
         if (!isFlipped)
-        {
             FindObjectOfType<MemoryGameManager>().CardSelected(this);
-        }
     }
 
     public void FlipCard()
     {
         isFlipped = true;
-
-        // Animate flip to front
         LeanTween.scaleX(gameObject, 0f, 0.15f).setOnComplete(() =>
         {
             frontImage.gameObject.SetActive(true);
@@ -39,8 +41,6 @@ public class MemoryCard : MonoBehaviour
     public void FlipBack()
     {
         isFlipped = false;
-
-        // Animate flip to back
         LeanTween.scaleX(gameObject, 0f, 0.15f).setOnComplete(() =>
         {
             frontImage.gameObject.SetActive(false);

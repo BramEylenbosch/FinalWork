@@ -1,28 +1,37 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using TMPro;
 
 public class MemoryGameManager : MonoBehaviour
 {
+    [Header("Cards")]
     public GameObject cardPrefab;
     public Transform cardGrid;
+
+    [Header("Standard Card Images (auto)")]
     public Sprite[] cardImages;
-    private List<MemoryCard> activeCards = new();
+
+    [Header("Photo Setup (custom)")]
+    public GameObject photoSetupPanel;
+    public Transform photoPreviewGrid;
+    public GameObject photoThumbnailPrefab;
+    public Button startGameButton;
+    public TMP_Text uitlegTekst;
+
+    [Header("Win Panel")]
+    public GameObject winPanel;
+
+    [HideInInspector]
+    public List<PersonalPhotoData> personalPhotosData = new List<PersonalPhotoData>();
+
+    private List<MemoryCard> activeCards = new List<MemoryCard>();
     private MemoryCard firstCard, secondCard;
     private int totalPairs;
     private int pairsFound = 0;
-    public GameObject winPanel;
-    public List<Sprite> personalPhotos = new List<Sprite>();
-    private bool usePersonalPhotos = true;
-    public GameObject photoSetupPanel;
-    public Transform photoPreviewGrid;
-    public Button startGameButton;
-    public GameObject photoThumbnailPrefab;
-    public static List<Sprite> savedPersonalPhotos = new();
-    public TextMeshProUGUI uitlegTekst;
-
+    private bool usePersonalPhotos = false;
 
     void Start()
     {
@@ -34,57 +43,76 @@ public class MemoryGameManager : MonoBehaviour
             cardGrid.gameObject.SetActive(false);
             photoSetupPanel.SetActive(true);
 
-            if (savedPersonalPhotos.Count > 0)
-            {
-                personalPhotos = new List<Sprite>(savedPersonalPhotos);
-
-                foreach (var photo in personalPhotos)
-                {
-                    GameObject thumbnail = Instantiate(photoThumbnailPrefab, photoPreviewGrid);
-                    thumbnail.GetComponent<Image>().sprite = photo;
-
-                    Button removeBtn = thumbnail.transform.Find("RemoveButton").GetComponent<Button>();
-                    Sprite capturedPhoto = photo;
-                    removeBtn.onClick.AddListener(() => RemovePhoto(capturedPhoto, thumbnail));
-                }
-
-                startGameButton.interactable = personalPhotos.Count >= 2 && personalPhotos.Count <= 8;
-            }
-            else
-            {
-                startGameButton.interactable = false;
-            }
+            startGameButton.interactable = personalPhotosData.Count >= 2;
         }
         else
         {
             usePersonalPhotos = false;
-            CreateCards();
+            photoSetupPanel.SetActive(false);
+            CreateStandardCards();
             cardGrid.gameObject.SetActive(true);
-            if (photoSetupPanel != null) photoSetupPanel.SetActive(false);
         }
     }
 
-    void CreateCards()
+    // ---------- CARD CREATION ----------
+
+    private void CreateStandardCards()
     {
-        List<int> ids = new();
+        cardGrid.gameObject.SetActive(true);
+        foreach (Transform child in cardGrid)
+            Destroy(child.gameObject);
+
+        totalPairs = cardImages.Length;
+
+        List<int> ids = new List<int>();
         for (int i = 0; i < cardImages.Length; i++)
         {
             ids.Add(i);
             ids.Add(i);
         }
 
-        totalPairs = cardImages.Length;
         Shuffle(ids);
 
         foreach (int id in ids)
         {
             GameObject newCard = Instantiate(cardPrefab, cardGrid);
             MemoryCard card = newCard.GetComponent<MemoryCard>();
-            card.Setup(cardImages[id], id);
+            card.Setup(cardImages[id], id); // Naam leeg voor auto kaarten
         }
     }
 
-    void Shuffle(List<int> list)
+    public void CreateCardsFromPersonalPhotos()
+    {
+        cardGrid.gameObject.SetActive(true);
+
+        foreach (Transform child in cardGrid)
+            Destroy(child.gameObject);
+
+        totalPairs = personalPhotosData.Count;
+
+        List<int> ids = new List<int>();
+        for (int i = 0; i < totalPairs; i++)
+        {
+            ids.Add(i);
+            ids.Add(i);
+        }
+
+        Shuffle(ids);
+
+        for (int i = 0; i < ids.Count; i++)
+        {
+            int id = ids[i];
+            GameObject newCard = Instantiate(cardPrefab, cardGrid);
+            MemoryCard card = newCard.GetComponent<MemoryCard>();
+
+            PersonalPhotoData data = personalPhotosData[id];
+            string label = data.naam + (string.IsNullOrEmpty(data.functie) ? "" : " – " + data.functie);
+
+            card.Setup(data.photo, id, label);
+        }
+    }
+
+    private void Shuffle(List<int> list)
     {
         for (int i = 0; i < list.Count; i++)
         {
@@ -92,6 +120,8 @@ public class MemoryGameManager : MonoBehaviour
             (list[i], list[rnd]) = (list[rnd], list[i]);
         }
     }
+
+    // ---------- CARD SELECTION ----------
 
     public void CardSelected(MemoryCard card)
     {
@@ -108,127 +138,98 @@ public class MemoryGameManager : MonoBehaviour
         }
     }
 
-    System.Collections.IEnumerator CheckMatch()
+    private IEnumerator CheckMatch()
     {
         yield return new WaitForSeconds(1f);
+
         if (firstCard.cardId == secondCard.cardId)
         {
-            CardMatchFound();
+            pairsFound++;
+            CheckWin();
         }
         else
         {
             firstCard.FlipBack();
             secondCard.FlipBack();
         }
+
         firstCard = null;
         secondCard = null;
     }
 
-    public void CardMatchFound()
+    private void CheckWin()
     {
-        pairsFound++;
-
         if (pairsFound >= totalPairs)
         {
-            ShowWinPanel();
+            if (winPanel != null)
+                winPanel.SetActive(true);
         }
     }
 
-    private void ShowWinPanel()
-    {
-        winPanel.SetActive(true);
-    }
+    // ---------- PERSONAL PHOTO MANAGEMENT ----------
 
-    public void RestartGame()
+    public void AddPersonalPhotoData(PersonalPhotoData data)
     {
-        savedPersonalPhotos = new List<Sprite>(personalPhotos);
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-    }
-
-    public void AddPersonalPhoto(Sprite photo)
-    {
-        if (personalPhotos.Count >= 8)
+        if (personalPhotosData.Count >= 8)
         {
             Debug.Log("Maximaal 8 foto's toegestaan.");
             return;
         }
 
-        if (!personalPhotos.Contains(photo))
-        {
-            personalPhotos.Add(photo);
-            Debug.Log("Foto toegevoegd: " + photo.name);
+        personalPhotosData.Add(data);
 
-            GameObject thumbnail = Instantiate(photoThumbnailPrefab, photoPreviewGrid);
-            thumbnail.GetComponent<Image>().sprite = photo;
+        GameObject thumbnail = Instantiate(photoThumbnailPrefab, photoPreviewGrid);
+        thumbnail.GetComponent<Image>().sprite = data.photo;
 
-            Button removeBtn = thumbnail.transform.Find("RemoveButton").GetComponent<Button>();
-            removeBtn.onClick.AddListener(() => RemovePhoto(photo, thumbnail));
+        Button removeBtn = thumbnail.transform.Find("RemoveButton").GetComponent<Button>();
+        removeBtn.onClick.AddListener(() => RemovePhotoData(data, thumbnail));
 
-            startGameButton.interactable = personalPhotos.Count >= 2 && personalPhotos.Count <= 8; 
-        }
+        startGameButton.interactable = personalPhotosData.Count >= 2 && personalPhotosData.Count <= 8;
     }
 
-    void RestartWithNewPhotos()
+    public void RemovePhotoData(PersonalPhotoData data, GameObject thumbnail)
     {
-        cardGrid.gameObject.SetActive(true);
-        foreach (Transform child in cardGrid)
-            Destroy(child.gameObject);
-
-        totalPairs = personalPhotos.Count;
-
-        List<int> ids = new List<int>();
-        for (int i = 0; i < totalPairs; i++)
+        if (personalPhotosData.Contains(data))
         {
-            ids.Add(i);
-            ids.Add(i);
-        }
+            personalPhotosData.Remove(data);
+            Destroy(thumbnail);
 
-        Shuffle(ids);
-
-        foreach (int id in ids)
-        {
-            GameObject newCard = Instantiate(cardPrefab, cardGrid);
-            MemoryCard card = newCard.GetComponent<MemoryCard>();
-            card.Setup(personalPhotos[id], id);
+            startGameButton.interactable = personalPhotosData.Count >= 2 && personalPhotosData.Count <= 8;
         }
     }
 
     public void StartGameWithPersonalPhotos()
     {
-        if (cardGrid.gameObject.activeSelf)
-            return;
-
-        if (personalPhotos.Count < 2)
+        if (personalPhotosData.Count < 2)
         {
             Debug.Log("Je moet minstens 2 foto's toevoegen.");
             return;
         }
-        if (personalPhotos.Count > 8)
-        {
-            Debug.Log("Maximaal 8 foto's toegestaan.");
-            return;
-        }
 
-        usePersonalPhotos = true;
+        if (uitlegTekst != null) uitlegTekst.gameObject.SetActive(false);
         photoSetupPanel.SetActive(false);
 
-        if (uitlegTekst != null)
-            uitlegTekst.gameObject.SetActive(false);
-
-        RestartWithNewPhotos();
+        CreateCardsFromPersonalPhotos();
     }
 
+    // ---------- RESTART ----------
 
-    public void RemovePhoto(Sprite photoToRemove, GameObject thumbnail)
+    public void RestartGame()
     {
-        if (personalPhotos.Contains(photoToRemove))
+        pairsFound = 0;
+        firstCard = null;
+        secondCard = null;
+
+        if (usePersonalPhotos)
         {
-            personalPhotos.Remove(photoToRemove);
-            Destroy(thumbnail);
-
-            savedPersonalPhotos = new List<Sprite>(personalPhotos);
-
-            startGameButton.interactable = personalPhotos.Count >= 2 && personalPhotos.Count <= 8;
+            CreateCardsFromPersonalPhotos();
         }
+        else
+        {
+            CreateStandardCards();
+        }
+
+        if (winPanel != null)
+            winPanel.SetActive(false);
     }
 }
