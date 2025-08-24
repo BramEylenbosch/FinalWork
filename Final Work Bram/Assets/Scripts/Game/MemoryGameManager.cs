@@ -164,7 +164,7 @@ public class MemoryGameManager : MonoBehaviour
             Button removeBtn = thumbnail.transform.Find("RemoveButton").GetComponent<Button>();
             removeBtn.onClick.AddListener(() => RemovePhoto(photo, thumbnail));
 
-            startGameButton.interactable = personalPhotos.Count >= 2 && personalPhotos.Count <= 8;
+            startGameButton.interactable = personalPhotos.Count >= 2 && personalPhotos.Count <= 8; 
         }
     }
 

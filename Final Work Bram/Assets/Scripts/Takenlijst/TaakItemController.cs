@@ -11,7 +11,6 @@ public class TaakItemController : MonoBehaviour
     public Button deleteButton;
 
     private Action<TaakItemController> onDelete;
-
     public event Action<bool> onVoltooidChanged;
 
     public void Setup(string tekst, string deadline, Action<TaakItemController> onDelete)
@@ -19,6 +18,7 @@ public class TaakItemController : MonoBehaviour
         taakText.text = tekst;
         deadlineText.text = string.IsNullOrEmpty(deadline) ? "" : $"{deadline}";
         this.onDelete = onDelete;
+        
 
         deleteButton.onClick.RemoveAllListeners();
         deleteButton.onClick.AddListener(() => onDelete(this));

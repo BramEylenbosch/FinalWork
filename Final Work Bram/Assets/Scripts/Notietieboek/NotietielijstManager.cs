@@ -65,7 +65,7 @@ public class NotitieLijstManager : MonoBehaviour
     private void KiesFoto()
     {
 #if UNITY_ANDROID || UNITY_IOS
-        NativeGallery.GetImageFromGallery((path) =>
+        NativeGallery.GetImageFromGallery((path) => 
         {
             if (path != null)
             {
@@ -109,11 +109,11 @@ public class NotitieLijstManager : MonoBehaviour
         rt.anchoredPosition = new Vector2(0, yStart - index * ySpacing);
 
         TMP_Text notitieTekst = nieuweNotitie.transform.Find("NotitieTekst")?.GetComponent<TMP_Text>();
-
+ 
         if (notitieTekst != null)
         {
-            Debug.Log("NotitieTekst wordt gezet op: " + data.tekst);
-            notitieTekst.text = string.IsNullOrEmpty(data.tekst) ? "" : data.tekst;
+            Debug.Log("NotitieTekst wordt gezet op: " + data.tekst); 
+            notitieTekst.text = string.IsNullOrEmpty(data.tekst) ? "" : data.tekst;                 
         }
         else
         {
