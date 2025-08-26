@@ -358,7 +358,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 270}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &495618336
@@ -660,7 +660,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 670}
-  m_SizeDelta: {x: 556, y: 50}
+  m_SizeDelta: {x: 1192, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &853229584
 MonoBehaviour:
@@ -682,7 +682,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Voeg tussen de 2 en 8 foto's toe!
+  m_text: Geef een Naam en functie, en voeg een foto van hun toe! (maximum 8 foto's)
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e7010a44afa21b34fa42f57005274790, type: 2}
   m_sharedMaterial: {fileID: -5900217578468114418, guid: e7010a44afa21b34fa42f57005274790, type: 2}
@@ -2563,7 +2563,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 747.72}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1660057539 &9223372036854775807
