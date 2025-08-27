@@ -2,37 +2,29 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class HandleidingViewer : MonoBehaviour
+public class HandleidingViewerGebruiker : MonoBehaviour
 {
     [Header("UI")]
     public Image paginaImage;
     public Button vorigeKnop;
     public Button volgendeKnop;
-    public Button fotoToevoegenKnop;
     public Button sluitKnop;
-
-    [HideInInspector] public HandleidingManager manager;
 
     private HandleidingData huidigeHandleiding;
     private int huidigeIndex = 0;
+    public GameObject handleidingListPanel; 
+
 
     void Start()
     {
         // Koppel de knoppen
         vorigeKnop.onClick.AddListener(Vorige);
         volgendeKnop.onClick.AddListener(Volgende);
-        fotoToevoegenKnop.onClick.RemoveAllListeners();
-        fotoToevoegenKnop.onClick.AddListener(NeemFoto);
         sluitKnop.onClick.AddListener(SluitViewer);
 
         // Zet standaard verborgen
         gameObject.SetActive(false);
-
-        // Alleen tonen als mantelzorger scene
-        if (manager == null)
-            fotoToevoegenKnop.gameObject.SetActive(false);
     }
-
 
     // Toon een specifieke handleiding
     public void ToonHandleiding(HandleidingData data)
@@ -41,14 +33,8 @@ public class HandleidingViewer : MonoBehaviour
         huidigeIndex = 0;
         gameObject.SetActive(true);
 
-        // Knop verbergen bij gebruiker
-        fotoToevoegenKnop.gameObject.SetActive(manager != null);
-
         ToonPagina();
-        
     }
-
-
 
     // Toon de huidige pagina
     private void ToonPagina()
@@ -91,58 +77,19 @@ public class HandleidingViewer : MonoBehaviour
         }
     }
 
-    // Foto maken met NativeCamera
-    public void NeemFoto()
-    {
-        NativeCamera.TakePicture((path) =>
-        {
-            if (path != null)
-            {
-                Debug.Log("Foto opgeslagen op: " + path);
-
-                // Laad de foto als Texture2D
-                Texture2D texture = NativeCamera.LoadImageAtPath(path, 1024, false); // ⚡ markTextureNonReadable = false
-                if (texture == null)
-                {
-                    Debug.LogError("Kon foto niet laden!");
-                    return;
-                }
-
-
-                // Maak er een Sprite van
-                Sprite nieuweSprite = Sprite.Create(texture,
-                    new Rect(0, 0, texture.width, texture.height),
-                    new Vector2(0.5f, 0.5f));
-
-                // Voeg toe aan handleiding
-                FotoToevoegen(nieuweSprite);
-            }
-        }, maxSize: 1024);
-    }
-
-
-    // Voeg een foto toe aan de huidige handleiding
-    public void FotoToevoegen(Sprite nieuweFoto)
-    {
-        if (huidigeHandleiding == null) return;
-
-        huidigeHandleiding.fotos.Add(nieuweFoto);
-        huidigeIndex = huidigeHandleiding.fotos.Count - 1; // laatste foto tonen
-        ToonPagina();
-        if (manager != null)
-            DataOpslagSystem.SlaHandleidingenOp(manager.GetHandleidingen());
-    }
-
     // Viewer sluiten
     public void SluitViewer()
     {
         gameObject.SetActive(false);
 
-        if (manager != null && manager.handleidingListPanel != null)
-            manager.handleidingListPanel.SetActive(true);
+        if (handleidingListPanel != null)
+            handleidingListPanel.SetActive(true);
     }
+
+
+    // Getter voor huidige handleiding
     public HandleidingData HuidigeHandleiding
-{
-    get { return huidigeHandleiding; }
-}
+    {
+        get { return huidigeHandleiding; }
+    }
 }

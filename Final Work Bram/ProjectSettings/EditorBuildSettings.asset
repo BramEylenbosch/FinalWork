@@ -35,4 +35,13 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/TakenlijstMantel.unity
     guid: 642f0c4694c15564e8ef673c5064909a
+  - enabled: 1
+    path: Assets/Scenes/MantelHandleiding.unity
+    guid: 8feab3ab206f53a44bb6010a7ea77fee
+  - enabled: 1
+    path: Assets/Scenes/GebruikerHandleiding.unity
+    guid: 53191c02a3b03d8458657f0d63b2d26c
+  - enabled: 0
+    path: Assets/Scenes/Handleiding.unity
+    guid: 40727817ef7366240a562583d032e1df
   m_configObjects: {}
