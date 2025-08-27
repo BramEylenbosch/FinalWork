@@ -209,7 +209,7 @@ public class TaaklijstManager : MonoBehaviour
             if (deadline.Date == nu.Date)
             {
                 // Plan notificaties elk minuut tot middernacht (voor testen)
-                DateTime volgende = nu.AddMinutes(1);
+                DateTime volgende = nu.AddMinutes(10);
                 while (volgende.Date == nu.Date)
                 {
                     notificationManager.MaakNotificatie(
@@ -217,7 +217,7 @@ public class TaaklijstManager : MonoBehaviour
                         $"Vergeet '{taak.tekst}' niet te voltooien!",
                         volgende
                     );
-                    volgende = volgende.AddMinutes(1);
+                    volgende = volgende.AddMinutes(10);
                 }
             }
         }

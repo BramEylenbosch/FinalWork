@@ -1998,7 +1998,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.00081072655}
+  m_AnchoredPosition: {x: 0, y: 0.00010626855}
   m_SizeDelta: {x: 0, y: 1000}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1842097385
@@ -2121,7 +2121,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 744400475}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.9999938
+  m_Size: 0.9999784
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -2481,15 +2481,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3438228453923885025, guid: 144b8a89684683249b033cd9f0f114f5, type: 3}
       propertyPath: m_Color.b
-      value: 1
+      value: 0.9411765
       objectReference: {fileID: 0}
     - target: {fileID: 3438228453923885025, guid: 144b8a89684683249b033cd9f0f114f5, type: 3}
       propertyPath: m_Color.g
-      value: 0.93333334
+      value: 0.90588236
       objectReference: {fileID: 0}
     - target: {fileID: 3438228453923885025, guid: 144b8a89684683249b033cd9f0f114f5, type: 3}
       propertyPath: m_Color.r
-      value: 0.8627451
+      value: 0.76862746
       objectReference: {fileID: 0}
     - target: {fileID: 3845327919832312482, guid: 144b8a89684683249b033cd9f0f114f5, type: 3}
       propertyPath: m_Pivot.x
