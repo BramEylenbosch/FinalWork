@@ -4,6 +4,8 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using DatePicker;
+using System.Collections.Generic;
+
 
 public class TaaklijstManager : MonoBehaviour
 {
@@ -78,10 +80,12 @@ public class TaaklijstManager : MonoBehaviour
     private void StuurTestNotificatie()
     {
         notificationManager.MaakNotificatie(
+            "TestTaak", // taakNaam placeholder
             "Test herinnering",
             "Dit is een testnotificatie om te kijken of het werkt.",
             DateTime.Now.AddSeconds(2)
         );
+
     }
 
     private void OpenToevoegPanel()
@@ -163,12 +167,16 @@ public class TaaklijstManager : MonoBehaviour
         int index = taakItems.IndexOf(taakItem);
         if (index >= 0)
         {
+            // 🔔 Notificaties annuleren
+            notificationManager.AnnuleerNotificatiesVoorTaak(takenLijst[index].tekst);
+
             taakItems.RemoveAt(index);
             takenLijst.RemoveAt(index);
             Destroy(taakItem.gameObject);
             SlaTakenOp();
         }
     }
+
 
     public void SlaTakenOp()
     {
@@ -208,11 +216,11 @@ public class TaaklijstManager : MonoBehaviour
             DateTime nu = DateTime.Now;
             if (deadline.Date == nu.Date)
             {
-                // Plan notificaties elk minuut tot middernacht (voor testen)
                 DateTime volgende = nu.AddMinutes(10);
                 while (volgende.Date == nu.Date)
                 {
                     notificationManager.MaakNotificatie(
+                        taak.tekst, // taakNaam → dit gebruiken we later bij annuleren
                         "Herinnering",
                         $"Vergeet '{taak.tekst}' niet te voltooien!",
                         volgende
@@ -222,6 +230,7 @@ public class TaaklijstManager : MonoBehaviour
             }
         }
     }
+
 }
 
 #if UNITY_EDITOR

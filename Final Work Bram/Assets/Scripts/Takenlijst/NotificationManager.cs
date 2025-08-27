@@ -1,8 +1,11 @@
 using UnityEngine;
 using Unity.Notifications.Android;
+using System.Collections.Generic;
 
 public class NotificationManager : MonoBehaviour
 {
+    private Dictionary<string, List<int>> taakNotificatieIds = new Dictionary<string, List<int>>();
+
     private void Start()
     {
         var channel = new AndroidNotificationChannel()
@@ -16,7 +19,7 @@ public class NotificationManager : MonoBehaviour
         AndroidNotificationCenter.RegisterNotificationChannel(channel);
     }
 
-    public void MaakNotificatie(string titel, string tekst, System.DateTime tijd)
+    public void MaakNotificatie(string taakNaam, string titel, string tekst, System.DateTime tijd)
     {
         var notification = new AndroidNotification()
         {
@@ -25,6 +28,23 @@ public class NotificationManager : MonoBehaviour
             FireTime = tijd
         };
 
-        AndroidNotificationCenter.SendNotification(notification, "taak_channel");
+        int id = AndroidNotificationCenter.SendNotification(notification, "taak_channel");
+
+        if (!taakNotificatieIds.ContainsKey(taakNaam))
+            taakNotificatieIds[taakNaam] = new List<int>();
+
+        taakNotificatieIds[taakNaam].Add(id);
+    }
+
+    public void AnnuleerNotificatiesVoorTaak(string taakNaam)
+    {
+        if (taakNotificatieIds.ContainsKey(taakNaam))
+        {
+            foreach (int id in taakNotificatieIds[taakNaam])
+            {
+                AndroidNotificationCenter.CancelNotification(id);
+            }
+            taakNotificatieIds.Remove(taakNaam);
+        }
     }
 }
