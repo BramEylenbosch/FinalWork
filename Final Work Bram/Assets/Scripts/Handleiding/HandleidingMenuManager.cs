@@ -21,6 +21,7 @@ public class HandleidingManager : MonoBehaviour
 
     public enum GebruikerType { Mantelzorger, Gebruiker }
     public GebruikerType gebruikerType;
+    public int maxHandleidingen = 8; // stel hier de limiet in
 
 
     void Start()
@@ -43,22 +44,36 @@ public class HandleidingManager : MonoBehaviour
             VoegHandleidingToe("Microgolf");
         }
 
+        annuleerKnop.onClick.RemoveAllListeners(); // voorkom dubbele listeners
+        annuleerKnop.onClick.AddListener(() =>
+        {
+            // Verberg popup
+            if (naamInputPanel != null)
+                naamInputPanel.SetActive(false);
 
-        // Popup standaard verbergen
-        naamInputPanel.SetActive(false);
+            // Toon de handleidinglijst weer
+            if (handleidingListPanel != null)
+                handleidingListPanel.SetActive(true);
+        });
         
     }
 
     public void VoegHandleidingToe(string naam)
     {
+        if (handleidingen.Count >= maxHandleidingen)
+        {
+            Debug.Log("Maximum aantal handleidingen bereikt!");
+            // Je kan hier eventueel ook een UI popup tonen
+            return;
+        }
+
         var nieuwe = new HandleidingData(naam);
         handleidingen.Add(nieuwe);
 
         MaakKnopVoorHandleiding(nieuwe);
 
         DataOpslagSystem.SlaHandleidingenOp(handleidingen);
-    }
-
+}
     void OpenHandleiding(HandleidingData data)
     {
         viewer.ToonHandleiding(data);
@@ -72,17 +87,25 @@ public class HandleidingManager : MonoBehaviour
     {
         naamInputField.text = "";
         naamInputPanel.SetActive(true); // popup tonen
+
+            if (handleidingListPanel != null)
+        handleidingListPanel.SetActive(false);
     }
 
-    private void BevestigNieuweHandleiding()
-    {
-        string naam = naamInputField.text.Trim();
-        if (!string.IsNullOrEmpty(naam))
-        {
-            VoegHandleidingToe(naam);
-        }
-        naamInputPanel.SetActive(false);
-    }
+private void BevestigNieuweHandleiding()
+{
+    string naam = naamInputField.text.Trim();
+    if (!string.IsNullOrEmpty(naam))
+        VoegHandleidingToe(naam);
+
+    naamInputPanel.SetActive(false);
+
+    if (handleidingListPanel != null)
+        handleidingListPanel.SetActive(true);
+}
+
+    
+
     public List<HandleidingData> GetHandleidingen()
     {
         return handleidingen;

@@ -684,15 +684,15 @@ MonoBehaviour:
       m_Calls: []
   m_text: Geef een Naam en functie, en voeg een foto van hun toe! (maximum 8 foto's)
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: e7010a44afa21b34fa42f57005274790, type: 2}
-  m_sharedMaterial: {fileID: -5900217578468114418, guid: e7010a44afa21b34fa42f57005274790, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 12b06afe2fbf11844a7b0838697e7515, type: 2}
+  m_sharedMaterial: {fileID: 1483733075354216939, guid: 12b06afe2fbf11844a7b0838697e7515, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+    rgba: 4294948408
+  m_fontColor: {r: 0.21960784, g: 0.7137255, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -715,7 +715,7 @@ MonoBehaviour:
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
+  m_fontStyle: 1
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 256
   m_textAlignment: 65535
@@ -1817,15 +1817,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2835848237468220588, guid: 416e0fd711bccdc4a852578f96d2cdb2, type: 3}
       propertyPath: m_Color.b
-      value: 0.6392157
+      value: 0.9411765
       objectReference: {fileID: 0}
     - target: {fileID: 2835848237468220588, guid: 416e0fd711bccdc4a852578f96d2cdb2, type: 3}
       propertyPath: m_Color.g
-      value: 0.972549
+      value: 0.90588236
       objectReference: {fileID: 0}
     - target: {fileID: 2835848237468220588, guid: 416e0fd711bccdc4a852578f96d2cdb2, type: 3}
       propertyPath: m_Color.r
-      value: 0.9843137
+      value: 0.76862746
       objectReference: {fileID: 0}
     - target: {fileID: 2835848237468220588, guid: 416e0fd711bccdc4a852578f96d2cdb2, type: 3}
       propertyPath: m_PixelsPerUnitMultiplier
@@ -1947,9 +1947,57 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: LoadScene
       objectReference: {fileID: 0}
+    - target: {fileID: 5359408434622147561, guid: 416e0fd711bccdc4a852578f96d2cdb2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
+      value: MemoryGameChoice
+      objectReference: {fileID: 0}
+    - target: {fileID: 5939668886019660785, guid: 416e0fd711bccdc4a852578f96d2cdb2, type: 3}
+      propertyPath: m_Color.b
+      value: 0.9411765
+      objectReference: {fileID: 0}
+    - target: {fileID: 5939668886019660785, guid: 416e0fd711bccdc4a852578f96d2cdb2, type: 3}
+      propertyPath: m_Color.g
+      value: 0.90588236
+      objectReference: {fileID: 0}
+    - target: {fileID: 5939668886019660785, guid: 416e0fd711bccdc4a852578f96d2cdb2, type: 3}
+      propertyPath: m_Color.r
+      value: 0.76862746
+      objectReference: {fileID: 0}
+    - target: {fileID: 7771076081474374166, guid: 416e0fd711bccdc4a852578f96d2cdb2, type: 3}
+      propertyPath: m_text
+      value: Terug
+      objectReference: {fileID: 0}
+    - target: {fileID: 7771076081474374166, guid: 416e0fd711bccdc4a852578f96d2cdb2, type: 3}
+      propertyPath: m_fontSize
+      value: 48
+      objectReference: {fileID: 0}
+    - target: {fileID: 7771076081474374166, guid: 416e0fd711bccdc4a852578f96d2cdb2, type: 3}
+      propertyPath: m_fontSizeBase
+      value: 48
+      objectReference: {fileID: 0}
+    - target: {fileID: 8136180048765440448, guid: 416e0fd711bccdc4a852578f96d2cdb2, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8136180048765440448, guid: 416e0fd711bccdc4a852578f96d2cdb2, type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8375002601852458833, guid: 416e0fd711bccdc4a852578f96d2cdb2, type: 3}
       propertyPath: m_Name
       value: GameCanvas
+      objectReference: {fileID: 0}
+    - target: {fileID: 9190403761439230734, guid: 416e0fd711bccdc4a852578f96d2cdb2, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 200
+      objectReference: {fileID: 0}
+    - target: {fileID: 9190403761439230734, guid: 416e0fd711bccdc4a852578f96d2cdb2, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 9190403761439230734, guid: 416e0fd711bccdc4a852578f96d2cdb2, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -690
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

@@ -5,7 +5,6 @@ public class NotificationManager : MonoBehaviour
 {
     private void Start()
     {
-        // Channel registreren bij opstart
         var channel = new AndroidNotificationChannel()
         {
             Id = "taak_channel",

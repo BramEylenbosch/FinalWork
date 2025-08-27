@@ -25,8 +25,11 @@ public class TaaklijstManager : MonoBehaviour
     [Header("Notificaties")]
     public NotificationManager notificationManager;
 
-    private List<TaakItemController> taakItems = new();
-    private List<TaakData> takenLijst = new();
+    [Header("Rol")]
+    public bool isMantelzorger = false;
+
+    private List<TaakItemController> taakItems = new List<TaakItemController>();
+    private List<TaakData> takenLijst = new List<TaakData>();
 
     private IDatePicker _datePicker;
     private string geselecteerdeDatum = "";
@@ -48,48 +51,38 @@ public class TaaklijstManager : MonoBehaviour
     private float yStart = 95f;
     private float ySpacing = 195f;
 
-    public bool isMantelzorger = false;
-
     private void Start()
     {
-        // Knoppen listeners instellen
-        openTaakPanelKnop.onClick.RemoveAllListeners();
+        // UI listeners
         openTaakPanelKnop.onClick.AddListener(OpenToevoegPanel);
-
-        bevestigToevoegenKnop.onClick.RemoveAllListeners();
         bevestigToevoegenKnop.onClick.AddListener(BevestigTaakToevoegen);
-
-        annuleerToevoegenKnop.onClick.RemoveAllListeners();
         annuleerToevoegenKnop.onClick.AddListener(SluitToevoegPanel);
+        kiesDatumKnop.onClick.AddListener(OpenDatePicker);
 
-        // DatePicker instellen
+        taakToevoegPanel.SetActive(false);
+        LaadTaken();
+
 #if UNITY_EDITOR
         _datePicker = new UnityEditorCalendarTaak();
 #elif UNITY_ANDROID
         _datePicker = new DatePicker.AndroidDatePicker();
 #endif
 
-        kiesDatumKnop.onClick.RemoveAllListeners();
-        kiesDatumKnop.onClick.AddListener(OpenDatePicker);
-
-        taakToevoegPanel.SetActive(false);
-        LaadTaken();
-
-        // 🔔 Testnotificatie: om de minuut
+        // 🔔 Testnotificatie om de minuut
         if (notificationManager != null)
         {
             InvokeRepeating(nameof(StuurTestNotificatie), 5f, 60f);
         }
     }
 
-     private void StuurTestNotificatie()
-     {
-         notificationManager.MaakNotificatie(
-             "Test herinnering",
-             "Dit is een testnotificatie om te kijken of het werkt.",
-             DateTime.Now.AddSeconds(2) // 2 seconden in de toekomst zodat Android hem toont
+    private void StuurTestNotificatie()
+    {
+        notificationManager.MaakNotificatie(
+            "Test herinnering",
+            "Dit is een testnotificatie om te kijken of het werkt.",
+            DateTime.Now.AddSeconds(2)
         );
-     }
+    }
 
     private void OpenToevoegPanel()
     {
@@ -97,7 +90,6 @@ public class TaaklijstManager : MonoBehaviour
         taakContainer.gameObject.SetActive(false);
         openTaakPanelKnop.gameObject.SetActive(false);
 
-        // Reset invoervelden
         taakInputField.text = "";
         geselecteerdeDatum = "";
         gekozenDatumText.text = "Geen datum gekozen";
@@ -106,10 +98,6 @@ public class TaaklijstManager : MonoBehaviour
     private void SluitToevoegPanel()
     {
         taakToevoegPanel.SetActive(false);
-        taakInputField.text = "";
-        geselecteerdeDatum = "";
-        gekozenDatumText.text = "Geen datum gekozen";
-
         taakContainer.gameObject.SetActive(true);
         openTaakPanelKnop.gameObject.SetActive(true);
     }
@@ -117,13 +105,12 @@ public class TaaklijstManager : MonoBehaviour
     private void BevestigTaakToevoegen()
     {
         string nieuweTaak = taakInputField.text.Trim();
-
         if (string.IsNullOrEmpty(nieuweTaak)) return;
 
         TaakData nieuweTaakData = new TaakData
         {
             tekst = nieuweTaak,
-            deadline = string.IsNullOrEmpty(geselecteerdeDatum) ? "" : geselecteerdeDatum,
+            deadline = geselecteerdeDatum,
             voltooid = false
         };
 
@@ -144,7 +131,6 @@ public class TaaklijstManager : MonoBehaviour
     {
         geselecteerdeDatum = value.ToString("dd-MM-yyyy");
         gekozenDatumText.text = geselecteerdeDatum;
-        Debug.Log("Datum gekozen: " + geselecteerdeDatum);
     }
 
     private void MaakTaakItem(TaakData taakData)
@@ -152,10 +138,11 @@ public class TaaklijstManager : MonoBehaviour
         GameObject taakGO = Instantiate(taakItemPrefab, taakContainer);
         TaakItemController taakItem = taakGO.GetComponent<TaakItemController>();
 
+        // Alleen mantelzorger kan verwijderen
         if (isMantelzorger)
             taakItem.Setup(taakData.tekst, taakData.deadline, VerwijderTaak);
         else
-            taakItem.Setup(taakData.tekst, taakData.deadline, null); // geen verwijderfunctie
+            taakItem.Setup(taakData.tekst, taakData.deadline, null);
 
         taakItem.SetVoltooid(taakData.voltooid);
         taakItem.onVoltooidChanged += (isVoltooid) =>
@@ -193,10 +180,7 @@ public class TaaklijstManager : MonoBehaviour
 
     public void LaadTaken()
     {
-        foreach (var taakItem in taakItems)
-        {
-            Destroy(taakItem.gameObject);
-        }
+        taakItems.ForEach(item => Destroy(item.gameObject));
         taakItems.Clear();
         takenLijst.Clear();
 
@@ -204,10 +188,9 @@ public class TaaklijstManager : MonoBehaviour
         {
             string json = PlayerPrefs.GetString("takenlijst");
             TaakDataWrapper wrapper = JsonUtility.FromJson<TaakDataWrapper>(json);
-
-            if (wrapper.taken != null)
+            if (wrapper?.taken != null)
             {
-                foreach (TaakData taak in wrapper.taken)
+                foreach (var taak in wrapper.taken)
                 {
                     takenLijst.Add(taak);
                     MaakTaakItem(taak);
@@ -215,40 +198,35 @@ public class TaaklijstManager : MonoBehaviour
             }
         }
     }
-    private void PlanNotificatiesVoorVandaag(TaakData taak)
-{
-    if (notificationManager == null) return;
-    if (string.IsNullOrEmpty(taak.deadline)) return;
 
-    if (DateTime.TryParseExact(taak.deadline, "dd-MM-yyyy", null, System.Globalization.DateTimeStyles.None, out DateTime deadline))
+    private void PlanNotificatiesVoorVandaag(TaakData taak)
     {
-        DateTime nu = DateTime.Now;
-        if (deadline.Date == nu.Date)
+        if (notificationManager == null || string.IsNullOrEmpty(taak.deadline)) return;
+
+        if (DateTime.TryParseExact(taak.deadline, "dd-MM-yyyy", null, System.Globalization.DateTimeStyles.None, out DateTime deadline))
         {
-            // Plan notificaties elk uur tot middernacht
-            DateTime volgendeUur = new DateTime(nu.Year, nu.Month, nu.Day, nu.Hour, 0, 0).AddHours(1);
-            while (volgendeUur.Date == nu.Date)
+            DateTime nu = DateTime.Now;
+            if (deadline.Date == nu.Date)
             {
-                notificationManager.MaakNotificatie(
-                    "Herinnering",
-                    $"Vergeet '{taak.tekst}' niet te voltooien!",
-                    volgendeUur
-                );
-                volgendeUur = volgendeUur.AddMinutes(1);
+                // Plan notificaties elk minuut tot middernacht (voor testen)
+                DateTime volgende = nu.AddMinutes(1);
+                while (volgende.Date == nu.Date)
+                {
+                    notificationManager.MaakNotificatie(
+                        "Herinnering",
+                        $"Vergeet '{taak.tekst}' niet te voltooien!",
+                        volgende
+                    );
+                    volgende = volgende.AddMinutes(1);
+                }
             }
         }
     }
 }
 
-}
-
 #if UNITY_EDITOR
-// Mock klasse om in de Editor te kunnen testen
 class UnityEditorCalendarTaak : IDatePicker
 {
-    public void Show(DateTime initDate, Action<DateTime> callback)
-    {
-        callback?.Invoke(initDate);
-    }
+    public void Show(DateTime initDate, Action<DateTime> callback) => callback?.Invoke(initDate);
 }
 #endif

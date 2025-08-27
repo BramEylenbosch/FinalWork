@@ -15,11 +15,11 @@ public class MemoryGameManager : MonoBehaviour
     public Sprite[] cardImages;
 
     [Header("Photo Setup (custom)")]
-    public GameObject photoSetupPanel;
-    public Transform photoPreviewGrid;
-    public GameObject photoThumbnailPrefab;
-    public Button startGameButton;
-    public TMP_Text uitlegTekst;
+[SerializeField] private GameObject photoSetupPanel;
+[SerializeField] private Transform photoPreviewGrid;
+[SerializeField] private GameObject photoThumbnailPrefab;
+[SerializeField] private Button startGameButton;
+[SerializeField] private TMP_Text uitlegTekst;
 
     [Header("Win Panel")]
     public GameObject winPanel;
@@ -33,26 +33,29 @@ public class MemoryGameManager : MonoBehaviour
     private int pairsFound = 0;
     private bool usePersonalPhotos = false;
 
-    void Start()
+void Start()
+{
+    string sceneName = SceneManager.GetActiveScene().name;
+
+    if (sceneName == "MemoryCustom" && photoSetupPanel != null)
     {
-        string sceneName = SceneManager.GetActiveScene().name;
+        usePersonalPhotos = true;
+        cardGrid.gameObject.SetActive(false);
+        photoSetupPanel.SetActive(true);
 
-        if (sceneName == "MemoryCustom")
-        {
-            usePersonalPhotos = true;
-            cardGrid.gameObject.SetActive(false);
-            photoSetupPanel.SetActive(true);
-
+        if (startGameButton != null)
             startGameButton.interactable = personalPhotosData.Count >= 2;
-        }
-        else
-        {
-            usePersonalPhotos = false;
-            photoSetupPanel.SetActive(false);
-            CreateStandardCards();
-            cardGrid.gameObject.SetActive(true);
-        }
     }
+    else
+    {
+        usePersonalPhotos = false;
+        if (photoSetupPanel != null)
+            photoSetupPanel.SetActive(false);
+        CreateStandardCards();
+        cardGrid.gameObject.SetActive(true);
+    }
+}
+
 
     // ---------- CARD CREATION ----------
 

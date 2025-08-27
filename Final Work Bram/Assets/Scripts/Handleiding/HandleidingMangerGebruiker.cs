@@ -60,4 +60,5 @@ public class HandleidingManagerGebruiker : MonoBehaviour
                 handleidingListPanel.SetActive(false);
         }
     }
+    
 }
