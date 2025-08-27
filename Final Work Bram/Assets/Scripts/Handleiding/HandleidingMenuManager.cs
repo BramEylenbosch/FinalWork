@@ -1,35 +1,47 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
-public class HandleidingMenuManager : MonoBehaviour
+public class HandleidingManager : MonoBehaviour
 {
-    public GameObject hoofdmenuPanel;
-    public GameObject microgolfPanel;
-    public GameObject koffiePanel;
-    public GameObject vaatwasserPanel;
-    
+    [Header("UI References")]
+    public Transform handleidingListParent;    // Content van ScrollView
+    public GameObject handleidingButtonPrefab; // Prefab met knop
+    public GameObject handleidingListPanel;    // <-- zet hier je "HandleidingList" object in de Inspector
 
-    public void OpenMicrogolf()
-    {
-        hoofdmenuPanel.SetActive(false);
-        microgolfPanel.SetActive(true);
-    }
+    public HandleidingViewer viewer; // verwijzing naar de viewer
 
-    public void OpenKoffie()
+    private List<HandleidingData> handleidingen = new List<HandleidingData>();
+
+    void Start()
     {
-        hoofdmenuPanel.SetActive(false);
-        koffiePanel.SetActive(true);
-    }
-    public void OpenVaatwasser()
-    {
-        hoofdmenuPanel.SetActive(false);
-        vaatwasserPanel.SetActive(true);
+        // koppel viewer terug naar manager
+        viewer.manager = this;
+
+        // Testvoorbeelden
+        VoegHandleidingToe("Koffiemachine");
+        VoegHandleidingToe("Microgolf");
     }
 
-    public void TerugNaarMenu()
+    public void VoegHandleidingToe(string naam)
     {
-        hoofdmenuPanel.SetActive(true);
-        microgolfPanel.SetActive(false);
-        koffiePanel.SetActive(false);
-        vaatwasserPanel.SetActive(false);
+        var nieuwe = new HandleidingData(naam);
+        handleidingen.Add(nieuwe);
+
+        // Maak een knop
+        GameObject knop = Instantiate(handleidingButtonPrefab, handleidingListParent);
+        knop.GetComponentInChildren<TextMeshProUGUI>().text = naam;
+        knop.GetComponent<Button>().onClick.AddListener(() => OpenHandleiding(nieuwe));
     }
+
+    void OpenHandleiding(HandleidingData data)
+    {
+        Debug.Log("OpenHandleiding - viewer object = " + viewer.gameObject.name);
+        viewer.ToonHandleiding(data);
+
+        if (handleidingListPanel != null)
+            handleidingListPanel.SetActive(false);
+    }
+
 }

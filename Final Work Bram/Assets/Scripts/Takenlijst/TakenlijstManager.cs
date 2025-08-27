@@ -22,6 +22,9 @@ public class TaaklijstManager : MonoBehaviour
     public Button kiesDatumKnop;
     public TextMeshProUGUI gekozenDatumText;
 
+    [Header("Notificaties")]
+    public NotificationManager notificationManager;
+
     private List<TaakItemController> taakItems = new();
     private List<TaakData> takenLijst = new();
 
@@ -45,6 +48,8 @@ public class TaaklijstManager : MonoBehaviour
     private float yStart = 95f;
     private float ySpacing = 195f;
 
+    public bool isMantelzorger = false;
+
     private void Start()
     {
         // Knoppen listeners instellen
@@ -59,7 +64,7 @@ public class TaaklijstManager : MonoBehaviour
 
         // DatePicker instellen
 #if UNITY_EDITOR
-        _datePicker = new UnityEditorCalendar();
+        _datePicker = new UnityEditorCalendarTaak();
 #elif UNITY_ANDROID
         _datePicker = new DatePicker.AndroidDatePicker();
 #endif
@@ -69,7 +74,22 @@ public class TaaklijstManager : MonoBehaviour
 
         taakToevoegPanel.SetActive(false);
         LaadTaken();
+
+        // 🔔 Testnotificatie: om de minuut
+        if (notificationManager != null)
+        {
+            InvokeRepeating(nameof(StuurTestNotificatie), 5f, 60f);
+        }
     }
+
+     private void StuurTestNotificatie()
+     {
+         notificationManager.MaakNotificatie(
+             "Test herinnering",
+             "Dit is een testnotificatie om te kijken of het werkt.",
+             DateTime.Now.AddSeconds(2) // 2 seconden in de toekomst zodat Android hem toont
+        );
+     }
 
     private void OpenToevoegPanel()
     {
@@ -109,6 +129,7 @@ public class TaaklijstManager : MonoBehaviour
 
         takenLijst.Add(nieuweTaakData);
         MaakTaakItem(nieuweTaakData);
+        PlanNotificatiesVoorVandaag(nieuweTaakData);
 
         SlaTakenOp();
         SluitToevoegPanel();
@@ -130,7 +151,12 @@ public class TaaklijstManager : MonoBehaviour
     {
         GameObject taakGO = Instantiate(taakItemPrefab, taakContainer);
         TaakItemController taakItem = taakGO.GetComponent<TaakItemController>();
-        taakItem.Setup(taakData.tekst, taakData.deadline, VerwijderTaak);
+
+        if (isMantelzorger)
+            taakItem.Setup(taakData.tekst, taakData.deadline, VerwijderTaak);
+        else
+            taakItem.Setup(taakData.tekst, taakData.deadline, null); // geen verwijderfunctie
+
         taakItem.SetVoltooid(taakData.voltooid);
         taakItem.onVoltooidChanged += (isVoltooid) =>
         {
@@ -189,6 +215,31 @@ public class TaaklijstManager : MonoBehaviour
             }
         }
     }
+    private void PlanNotificatiesVoorVandaag(TaakData taak)
+{
+    if (notificationManager == null) return;
+    if (string.IsNullOrEmpty(taak.deadline)) return;
+
+    if (DateTime.TryParseExact(taak.deadline, "dd-MM-yyyy", null, System.Globalization.DateTimeStyles.None, out DateTime deadline))
+    {
+        DateTime nu = DateTime.Now;
+        if (deadline.Date == nu.Date)
+        {
+            // Plan notificaties elk uur tot middernacht
+            DateTime volgendeUur = new DateTime(nu.Year, nu.Month, nu.Day, nu.Hour, 0, 0).AddHours(1);
+            while (volgendeUur.Date == nu.Date)
+            {
+                notificationManager.MaakNotificatie(
+                    "Herinnering",
+                    $"Vergeet '{taak.tekst}' niet te voltooien!",
+                    volgendeUur
+                );
+                volgendeUur = volgendeUur.AddMinutes(1);
+            }
+        }
+    }
+}
+
 }
 
 #if UNITY_EDITOR

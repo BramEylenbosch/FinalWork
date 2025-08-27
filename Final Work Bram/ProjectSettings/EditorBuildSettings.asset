@@ -29,4 +29,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/MemoryCustom.unity
     guid: 73786707cde66754e8eeaa82789edc32
+  - enabled: 1
+    path: Assets/Scenes/MantelHome.unity
+    guid: 0978d518ec5c6e74eb589a00b9878e81
+  - enabled: 1
+    path: Assets/Scenes/TakenlijstMantel.unity
+    guid: 642f0c4694c15564e8ef673c5064909a
   m_configObjects: {}

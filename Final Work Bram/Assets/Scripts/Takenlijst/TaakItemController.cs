@@ -18,10 +18,18 @@ public class TaakItemController : MonoBehaviour
         taakText.text = tekst;
         deadlineText.text = string.IsNullOrEmpty(deadline) ? "" : $"{deadline}";
         this.onDelete = onDelete;
-        
 
-        deleteButton.onClick.RemoveAllListeners();
-        deleteButton.onClick.AddListener(() => onDelete(this));
+        // Delete-knop alleen zichtbaar en actief als er een verwijderfunctie is
+        if (onDelete != null)
+        {
+            deleteButton.gameObject.SetActive(true);
+            deleteButton.onClick.RemoveAllListeners();
+            deleteButton.onClick.AddListener(() => onDelete(this));
+        }
+        else
+        {
+            deleteButton.gameObject.SetActive(false);
+        }
 
         voltooidToggle.onValueChanged.RemoveAllListeners();
         voltooidToggle.onValueChanged.AddListener(OnToggleChanged);

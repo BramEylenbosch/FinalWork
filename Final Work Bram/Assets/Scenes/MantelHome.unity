@@ -310,7 +310,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: Takenlijst
+          m_StringArgument: TakenlijstMantel
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &28420111
@@ -778,6 +778,14 @@ PrefabInstance:
     - target: {fileID: 3845327919832312482, guid: 144b8a89684683249b033cd9f0f114f5, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3903697301113766051, guid: 144b8a89684683249b033cd9f0f114f5, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1449512079}
+    - target: {fileID: 3903697301113766051, guid: 144b8a89684683249b033cd9f0f114f5, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: LoadScene
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
