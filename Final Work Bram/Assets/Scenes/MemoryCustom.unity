@@ -1949,7 +1949,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5359408434622147561, guid: 416e0fd711bccdc4a852578f96d2cdb2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
-      value: MemoryGameChoice
+      value: GebruikerStartScene
       objectReference: {fileID: 0}
     - target: {fileID: 5939668886019660785, guid: 416e0fd711bccdc4a852578f96d2cdb2, type: 3}
       propertyPath: m_Color.b

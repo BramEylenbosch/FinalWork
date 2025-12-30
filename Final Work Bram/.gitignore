@@ -30,3 +30,13 @@ Assets/LeanTween/Documentation/
 Assets/LeanTween/Editor/
 Assets/LeanTween/Examples/
 Assets/LeanTween/Testing/
+Firebase / Android / iOS
+
+# Ignore Firebase large binaries
+Assets/Firebase/Plugins/x86_64/*.bundle
+Assets/Firebase/Plugins/x86_64/*.so
+Assets/Firebase/Plugins/
+
+Assets/Firebase/
+Assets/Plugins/Firebase/
+Assets/ExternalDependencyManager/

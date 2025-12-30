@@ -605,10 +605,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7790546d4351801428aa944a786d985a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mapNaam: Koffie
   paginaImage: {fileID: 2040538148}
   vorigeKnop: {fileID: 766560942}
   volgendeKnop: {fileID: 244910006}
+  fotoToevoegenKnop: {fileID: 0}
+  sluitKnop: {fileID: 0}
+  manager: {fileID: 0}
 --- !u!1 &340498679
 GameObject:
   m_ObjectHideFlags: 0
@@ -638,10 +640,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c84d532e594f82949bbee1916d822448, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hoofdmenuPanel: {fileID: 710667280}
-  microgolfPanel: {fileID: 1171113532}
-  koffiePanel: {fileID: 316452553}
-  vaatwasserPanel: {fileID: 1877538933}
+  handleidingListParent: {fileID: 0}
+  handleidingButtonPrefab: {fileID: 0}
+  handleidingListPanel: {fileID: 0}
+  viewer: {fileID: 0}
+  naamInputPanel: {fileID: 0}
+  naamInputField: {fileID: 0}
+  bevestigKnop: {fileID: 0}
+  annuleerKnop: {fileID: 0}
+  gebruikerType: 0
+  maxHandleidingen: 8
 --- !u!4 &340498681
 Transform:
   m_ObjectHideFlags: 0
@@ -2383,10 +2391,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7790546d4351801428aa944a786d985a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mapNaam: Microgolf
   paginaImage: {fileID: 1146262670}
   vorigeKnop: {fileID: 2088909806}
   volgendeKnop: {fileID: 1176695349}
+  fotoToevoegenKnop: {fileID: 0}
+  sluitKnop: {fileID: 0}
+  manager: {fileID: 0}
 --- !u!1 &1176695348
 GameObject:
   m_ObjectHideFlags: 0
@@ -4203,10 +4213,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7790546d4351801428aa944a786d985a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mapNaam: Vaatwasser
   paginaImage: {fileID: 1701224387}
   vorigeKnop: {fileID: 1787842584}
   volgendeKnop: {fileID: 1792147548}
+  fotoToevoegenKnop: {fileID: 0}
+  sluitKnop: {fileID: 0}
+  manager: {fileID: 0}
 --- !u!114 &1877538935
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4292,10 +4304,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7790546d4351801428aa944a786d985a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mapNaam: Microgolf
   paginaImage: {fileID: 1146262670}
   vorigeKnop: {fileID: 2088909806}
   volgendeKnop: {fileID: 1176695349}
+  fotoToevoegenKnop: {fileID: 0}
+  sluitKnop: {fileID: 0}
+  manager: {fileID: 0}
 --- !u!1 &2040538146
 GameObject:
   m_ObjectHideFlags: 0

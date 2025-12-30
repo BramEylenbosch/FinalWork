@@ -3594,7 +3594,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.00014905435}
+  m_AnchoredPosition: {x: 0, y: 0.000039960323}
   m_SizeDelta: {x: 0, y: 1000}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1842097385
@@ -3851,7 +3851,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 744400475}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.9999981
+  m_Size: 0.9995842
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -4225,7 +4225,7 @@ PrefabInstance:
       objectReference: {fileID: 1958883947}
     - target: {fileID: 3903697301113766051, guid: 144b8a89684683249b033cd9f0f114f5, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
-      value: MantelHome
+      value: MantelzorgerStartScene
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

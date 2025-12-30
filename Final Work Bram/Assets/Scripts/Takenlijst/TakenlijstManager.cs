@@ -4,8 +4,6 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using DatePicker;
-using System.Collections.Generic;
-
 
 public class TaaklijstManager : MonoBehaviour
 {
@@ -30,31 +28,21 @@ public class TaaklijstManager : MonoBehaviour
     [Header("Rol")]
     public bool isMantelzorger = false;
 
-    private List<TaakItemController> taakItems = new List<TaakItemController>();
-    private List<TaakData> takenLijst = new List<TaakData>();
+    private List<TaakItemController> taakItems = new();
+    private List<Taak> takenLijst = new();
+
+    private FirestoreTakenService firestoreService;
 
     private IDatePicker _datePicker;
     private string geselecteerdeDatum = "";
-
-    [System.Serializable]
-    public class TaakData
-    {
-        public string tekst;
-        public string deadline;
-        public bool voltooid;
-    }
-
-    [System.Serializable]
-    private class TaakDataWrapper
-    {
-        public List<TaakData> taken;
-    }
 
     private float yStart = 95f;
     private float ySpacing = 195f;
 
     private void Start()
     {
+        firestoreService = new FirestoreTakenService();
+
         // UI listeners
         openTaakPanelKnop.onClick.AddListener(OpenToevoegPanel);
         bevestigToevoegenKnop.onClick.AddListener(BevestigTaakToevoegen);
@@ -62,7 +50,6 @@ public class TaaklijstManager : MonoBehaviour
         kiesDatumKnop.onClick.AddListener(OpenDatePicker);
 
         taakToevoegPanel.SetActive(false);
-        LaadTaken();
 
 #if UNITY_EDITOR
         _datePicker = new UnityEditorCalendarTaak();
@@ -70,7 +57,9 @@ public class TaaklijstManager : MonoBehaviour
         _datePicker = new DatePicker.AndroidDatePicker();
 #endif
 
-        // 🔔 Testnotificatie om de minuut
+        HerlaadTaken();
+
+        // 🔔 Testnotificatie
         if (notificationManager != null)
         {
             InvokeRepeating(nameof(StuurTestNotificatie), 5f, 60f);
@@ -80,16 +69,17 @@ public class TaaklijstManager : MonoBehaviour
     private void StuurTestNotificatie()
     {
         notificationManager.MaakNotificatie(
-            "TestTaak", // taakNaam placeholder
+            "TestTaak",
             "Test herinnering",
-            "Dit is een testnotificatie om te kijken of het werkt.",
+            "Dit is een testnotificatie.",
             DateTime.Now.AddSeconds(2)
         );
-
     }
 
     private void OpenToevoegPanel()
     {
+        if (!isMantelzorger) return;
+
         taakToevoegPanel.SetActive(true);
         taakContainer.gameObject.SetActive(false);
         openTaakPanelKnop.gameObject.SetActive(false);
@@ -106,24 +96,24 @@ public class TaaklijstManager : MonoBehaviour
         openTaakPanelKnop.gameObject.SetActive(true);
     }
 
-    private void BevestigTaakToevoegen()
+    private async void BevestigTaakToevoegen()
     {
-        string nieuweTaak = taakInputField.text.Trim();
-        if (string.IsNullOrEmpty(nieuweTaak)) return;
+        string tekst = taakInputField.text.Trim();
+        if (string.IsNullOrEmpty(tekst)) return;
 
-        TaakData nieuweTaakData = new TaakData
+        Taak nieuweTaak = new Taak
         {
-            tekst = nieuweTaak,
+            id = Guid.NewGuid().ToString(),
+            tekst = tekst,
             deadline = geselecteerdeDatum,
             voltooid = false
         };
 
-        takenLijst.Add(nieuweTaakData);
-        MaakTaakItem(nieuweTaakData);
-        PlanNotificatiesVoorVandaag(nieuweTaakData);
+        await firestoreService.VoegTaakToe(nieuweTaak);
 
-        SlaTakenOp();
+        PlanNotificatiesVoorVandaag(nieuweTaak);
         SluitToevoegPanel();
+        HerlaadTaken();
     }
 
     private void OpenDatePicker()
@@ -137,23 +127,24 @@ public class TaaklijstManager : MonoBehaviour
         gekozenDatumText.text = geselecteerdeDatum;
     }
 
-    private void MaakTaakItem(TaakData taakData)
+    private void MaakTaakItem(Taak taak)
     {
         GameObject taakGO = Instantiate(taakItemPrefab, taakContainer);
         TaakItemController taakItem = taakGO.GetComponent<TaakItemController>();
 
-        // Alleen mantelzorger kan verwijderen
         if (isMantelzorger)
-            taakItem.Setup(taakData.tekst, taakData.deadline, VerwijderTaak);
+            taakItem.Setup(taak.tekst, taak.deadline, VerwijderTaak);
         else
-            taakItem.Setup(taakData.tekst, taakData.deadline, null);
+            taakItem.Setup(taak.tekst, taak.deadline, null);
 
-        taakItem.SetVoltooid(taakData.voltooid);
-        taakItem.onVoltooidChanged += (isVoltooid) =>
+        taakItem.SetVoltooid(taak.voltooid);
+
+        taakItem.onVoltooidChanged += async (isVoltooid) =>
         {
-            taakData.voltooid = isVoltooid;
-            SlaTakenOp();
+            taak.voltooid = isVoltooid;
+            await firestoreService.VoegTaakToe(taak);
         };
+
         taakItems.Add(taakItem);
 
         int index = taakItems.Count - 1;
@@ -162,80 +153,71 @@ public class TaaklijstManager : MonoBehaviour
         taakGO.transform.localPosition = pos;
     }
 
-    private void VerwijderTaak(TaakItemController taakItem)
+    private async void VerwijderTaak(TaakItemController taakItem)
     {
         int index = taakItems.IndexOf(taakItem);
-        if (index >= 0)
-        {
-            // 🔔 Notificaties annuleren
-            notificationManager.AnnuleerNotificatiesVoorTaak(takenLijst[index].tekst);
+        if (index < 0) return;
 
-            taakItems.RemoveAt(index);
-            takenLijst.RemoveAt(index);
-            Destroy(taakItem.gameObject);
-            SlaTakenOp();
-        }
+        Taak taak = takenLijst[index];
+
+        notificationManager?.AnnuleerNotificatiesVoorTaak(taak.tekst);
+
+        await firestoreService.VerwijderTaak(taak.id);
+        HerlaadTaken();
     }
 
-
-    public void SlaTakenOp()
+    private async void HerlaadTaken()
     {
-        TaakDataWrapper wrapper = new TaakDataWrapper { taken = takenLijst };
-        string json = JsonUtility.ToJson(wrapper);
-        PlayerPrefs.SetString("takenlijst", json);
-        PlayerPrefs.Save();
-    }
+        foreach (var item in taakItems)
+            Destroy(item.gameObject);
 
-    public void LaadTaken()
-    {
-        taakItems.ForEach(item => Destroy(item.gameObject));
         taakItems.Clear();
         takenLijst.Clear();
 
-        if (PlayerPrefs.HasKey("takenlijst"))
+        var taken = await firestoreService.LaadTaken();
+
+        foreach (var taak in taken)
         {
-            string json = PlayerPrefs.GetString("takenlijst");
-            TaakDataWrapper wrapper = JsonUtility.FromJson<TaakDataWrapper>(json);
-            if (wrapper?.taken != null)
-            {
-                foreach (var taak in wrapper.taken)
-                {
-                    takenLijst.Add(taak);
-                    MaakTaakItem(taak);
-                }
-            }
+            takenLijst.Add(taak);
+            MaakTaakItem(taak);
         }
     }
 
-    private void PlanNotificatiesVoorVandaag(TaakData taak)
+    private void PlanNotificatiesVoorVandaag(Taak taak)
     {
         if (notificationManager == null || string.IsNullOrEmpty(taak.deadline)) return;
 
-        if (DateTime.TryParseExact(taak.deadline, "dd-MM-yyyy", null, System.Globalization.DateTimeStyles.None, out DateTime deadline))
+        if (DateTime.TryParseExact(
+            taak.deadline,
+            "dd-MM-yyyy",
+            null,
+            System.Globalization.DateTimeStyles.None,
+            out DateTime deadline))
         {
-            DateTime nu = DateTime.Now;
-            if (deadline.Date == nu.Date)
+            if (deadline.Date != DateTime.Now.Date) return;
+
+            DateTime volgende = DateTime.Now.AddMinutes(10);
+
+            while (volgende.Date == DateTime.Now.Date)
             {
-                DateTime volgende = nu.AddMinutes(10);
-                while (volgende.Date == nu.Date)
-                {
-                    notificationManager.MaakNotificatie(
-                        taak.tekst, // taakNaam → dit gebruiken we later bij annuleren
-                        "Herinnering",
-                        $"Vergeet '{taak.tekst}' niet te voltooien!",
-                        volgende
-                    );
-                    volgende = volgende.AddMinutes(10);
-                }
+                notificationManager.MaakNotificatie(
+                    taak.tekst,
+                    "Herinnering",
+                    $"Vergeet '{taak.tekst}' niet te voltooien!",
+                    volgende
+                );
+                volgende = volgende.AddMinutes(10);
             }
         }
     }
-
 }
 
 #if UNITY_EDITOR
 class UnityEditorCalendarTaak : IDatePicker
 {
-    public void Show(DateTime initDate, Action<DateTime> callback) => callback?.Invoke(initDate);
+    public void Show(DateTime initDate, Action<DateTime> callback)
+    {
+        callback?.Invoke(initDate);
+    }
 }
 #endif
