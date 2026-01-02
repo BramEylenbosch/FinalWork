@@ -78,6 +78,7 @@ public class TaaklijstManager : MonoBehaviour
 
     private void OpenToevoegPanel()
     {
+        Debug.Log("Klik ontvangen, isMantelzorger = " + isMantelzorger);
         if (!isMantelzorger) return;
 
         taakToevoegPanel.SetActive(true);

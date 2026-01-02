@@ -1,11 +1,19 @@
-using System;
 using Firebase.Firestore;
+using System;
 
+[FirestoreData]
 [Serializable]
 public class Taak
 {
-    public string id;
-    public string tekst;
-    public string deadline;
-    public bool voltooid;
+    [FirestoreProperty]
+    public string id { get; set; }
+
+    [FirestoreProperty]
+    public string tekst { get; set; }
+
+    [FirestoreProperty]
+    public string deadline { get; set; }
+
+    [FirestoreProperty]
+    public bool voltooid { get; set; }
 }
