@@ -31,26 +31,31 @@ public class AuthManager : MonoBehaviour
         });
     }
 
-    public void Login()
-    {
-        string email = emailInput.text;
-        string password = passwordInput.text;
+public void Login()
+{
+    string email = emailInput.text;
+    string password = passwordInput.text;
 
-        FirebaseInit.auth.SignInWithEmailAndPasswordAsync(email, password)
-            .ContinueWithOnMainThread(task => {
-                if (task.IsCompleted && !task.IsFaulted)
-                {
-                    feedbackText.text = "Login succesvol!";
-                    Debug.Log("Login successful!");
+    FirebaseInit.auth.SignInWithEmailAndPasswordAsync(email, password)
+        .ContinueWithOnMainThread(task =>
+        {
+            if (task.IsCompleted && !task.IsFaulted)
+            {
+                feedbackText.text = "Login succesvol!";
 
-                    // Scene laden op main thread
-                    SceneManager.LoadScene("MantelzorgerStartScene");
-                }
-                else
-                {
-                    feedbackText.text = "Login mislukt: " + task.Exception?.InnerException?.Message;
-                    Debug.LogError(task.Exception);
-                }
-            });
+                KoppelingService koppelingService = new KoppelingService();
+                koppelingService
+                    .KoppelMantelzorgerAanGebruiker(AppBootstrap.GebruikerId)
+                    .ContinueWithOnMainThread(_ =>
+                    {
+                        SceneManager.LoadScene("MantelzorgerStartScene");
+                    });
+            }
+            else
+            {
+                feedbackText.text = "Login mislukt";
+            }
+        });
+
     }
 }
