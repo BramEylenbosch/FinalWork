@@ -1,40 +1,46 @@
 using UnityEngine;
 using Firebase.Firestore;
+using System;
 using System.Collections.Generic;
 
 public class GebruikerInitializer : MonoBehaviour
 {
-    private const string GEBRUIKER_ID_KEY = "gebruikerId";
+    public static GebruikerInitializer Instance; // Singleton
 
     private void Awake()
     {
-        if (!PlayerPrefs.HasKey(GEBRUIKER_ID_KEY))
-        {
-            MaakNieuweGebruiker();
-        }
-        else
-        {
-            Debug.Log("Bestaande gebruikerId: " + PlayerPrefs.GetString(GEBRUIKER_ID_KEY));
-        }
+        // Zorg dat UserId en CaretakerId worden geladen
+        UserContext.UserId = PlayerPrefs.GetString(UserContext.USER_ID_KEY, "");
+        UserContext.CaretakerId = PlayerPrefs.GetString("caretakerId", "");
+
+        Debug.Log($"[GebruikerInitializer] UserId: {UserContext.UserId}, CaretakerId: {UserContext.CaretakerId}");
     }
 
-    private void MaakNieuweGebruiker()
+
+
+    // Publieke methode voor aanmaken van nieuwe gebruiker
+    public async void MaakNieuweGebruiker()
     {
-        string gebruikerId = System.Guid.NewGuid().ToString();
-        PlayerPrefs.SetString(GEBRUIKER_ID_KEY, gebruikerId);
+        if (!string.IsNullOrEmpty(UserContext.UserId))
+        {
+            Debug.Log("[GebruikerInitializer] UserId bestaat al, geen nieuwe gebruiker aangemaakt.");
+            return;
+        }
+
+        string userId = Guid.NewGuid().ToString();
+        PlayerPrefs.SetString(UserContext.USER_ID_KEY, userId);
         PlayerPrefs.Save();
+
+        UserContext.UserId = userId;
 
         FirebaseFirestore db = FirebaseFirestore.DefaultInstance;
 
-        Dictionary<string, object> data = new Dictionary<string, object>
+        var data = new Dictionary<string, object>
         {
             { "mantelzorgerId", "" }
         };
 
-        db.Collection("gebruikers")
-          .Document(gebruikerId)
-          .SetAsync(data);
-
-        Debug.Log("Nieuwe gebruiker aangemaakt: " + gebruikerId);
+        await db.Collection("gebruikers").Document(userId).SetAsync(data);
+        Debug.Log("[GebruikerInitializer] Nieuwe gebruiker aangemaakt: " + userId);
     }
 }

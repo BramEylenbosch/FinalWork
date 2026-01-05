@@ -6,39 +6,74 @@ using UnityEngine;
 public class FirestoreTakenService
 {
     FirebaseFirestore db => FirebaseFirestore.DefaultInstance;
-    string GebruikerId => PlayerPrefs.GetString("gebruikerId");
 
-    public Task VoegTaakToe(Taak taak)
+    // Dynamische targetUserId: mantelzorger of gebruiker
+    private string TargetUserId
     {
-        return db.Collection("gebruikers")
-                 .Document(GebruikerId)
-                 .Collection("taken")
-                 .Document(taak.id)
-                 .SetAsync(taak);
+        get
+        {
+            if (UserContext.UserRole == "Mantelzorger")
+                return UserContext.UserId;          // Mantelzorger schrijft naar eigen document
+            else
+                return UserContext.CaretakerId;    // Gebruiker leest van gekoppelde mantelzorger
+        }
+    }
+
+    public async Task VoegTaakToe(Taak taak)
+    {
+        if (string.IsNullOrEmpty(TargetUserId))
+        {
+            Debug.LogWarning("[FirestoreTakenService] TargetUserId is leeg, taak niet opgeslagen.");
+            return;
+        }
+
+        await db.Collection("gebruikers")
+                .Document(TargetUserId)
+                .Collection("taken")
+                .Document(taak.id)
+                .SetAsync(taak);
+
+        Debug.Log($"[FirestoreTakenService] Taak toegevoegd aan {TargetUserId}: {taak.tekst}");
     }
 
     public async Task<List<Taak>> LaadTaken()
     {
-        QuerySnapshot snapshot = await db
-            .Collection("gebruikers")
-            .Document(GebruikerId)
-            .Collection("taken")
-            .GetSnapshotAsync();
+        List<Taak> taken = new List<Taak>();
 
-        List<Taak> taken = new();
+        if (string.IsNullOrEmpty(TargetUserId))
+        {
+            Debug.LogWarning("[FirestoreTakenService] TargetUserId is leeg, geen taken geladen.");
+            return taken;
+        }
+
+        QuerySnapshot snapshot = await db.Collection("gebruikers")
+                                         .Document(TargetUserId)
+                                         .Collection("taken")
+                                         .GetSnapshotAsync();
 
         foreach (var doc in snapshot.Documents)
+        {
             taken.Add(doc.ConvertTo<Taak>());
+        }
 
+        Debug.Log($"[FirestoreTakenService] {taken.Count} taken geladen voor {TargetUserId}");
         return taken;
     }
 
-    public Task VerwijderTaak(string taakId)
+    public async Task VerwijderTaak(string taakId)
     {
-        return db.Collection("gebruikers")
-                 .Document(GebruikerId)
-                 .Collection("taken")
-                 .Document(taakId)
-                 .DeleteAsync();
+        if (string.IsNullOrEmpty(TargetUserId))
+        {
+            Debug.LogWarning("[FirestoreTakenService] TargetUserId is leeg, taak niet verwijderd.");
+            return;
+        }
+
+        await db.Collection("gebruikers")
+                .Document(TargetUserId)
+                .Collection("taken")
+                .Document(taakId)
+                .DeleteAsync();
+
+        Debug.Log($"[FirestoreTakenService] Taak verwijderd uit {TargetUserId}: {taakId}");
     }
 }

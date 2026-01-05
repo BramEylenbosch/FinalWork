@@ -5,17 +5,22 @@ public class RoleSelection : MonoBehaviour
 {
     public void KiesGebruiker()
     {
-        PlayerPrefs.SetString("UserRole", "Gebruiker");
-        PlayerPrefs.Save();
+        UserContext.UserRole = "Gebruiker";
+
+        if (string.IsNullOrEmpty(UserContext.UserId))
+            GebruikerInitializer.Instance.MaakNieuweGebruiker();
+
         SceneManager.LoadScene("GebruikerStartScene");
-        Debug.Log("UserRole gezet op: " + PlayerPrefs.GetString("UserRole"));
     }
 
-public void KiesMantelzorger()
-{
-    PlayerPrefs.SetString("UserRole", "Mantelzorger");
-    PlayerPrefs.Save();
-    SceneManager.LoadScene("MantelzorgerStartScene");
-}
+    public void KiesMantelzorger()
+    {
+        UserContext.UserRole = "Mantelzorger";
+
+        if (string.IsNullOrEmpty(UserContext.UserId))
+            GebruikerInitializer.Instance.MaakNieuweGebruiker();
+
+        SceneManager.LoadScene("MantelzorgerStartScene");
+    }
 
 }
