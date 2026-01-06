@@ -62,7 +62,7 @@ async void Start()
         handleiding.fotos.Add(sprite);
     }
 
-public void VoegHandleidingToe(string naam)
+public async void VoegHandleidingToe(string naam)
 {
     if (handleidingen.Count >= maxHandleidingen)
     {
@@ -70,34 +70,53 @@ public void VoegHandleidingToe(string naam)
         return;
     }
 
+    string id = System.Guid.NewGuid().ToString();
+
     var nieuwe = new HandleidingData(naam)
     {
-        id = System.Guid.NewGuid().ToString() // ⚡ unieke id
+        id = id
     };
 
     handleidingen.Add(nieuwe);
     MaakKnopVoorHandleiding(nieuwe);
 
+    // Opslaan lokaal
     DataOpslagSystem.SlaHandleidingenOp(handleidingen);
+
+    // Opslaan in Firestore
+    await FirestoreHandleidingService.Instance.VoegHandleidingToe(id, naam);
 }
 
-    void OpenHandleiding(HandleidingData data)
-    {
-        viewer.ToonHandleiding(data);
 
-        if (handleidingListPanel != null)
-            handleidingListPanel.SetActive(false);
-    }
+private void OpenHandleiding(HandleidingData data)
+{
+    bool isMantelzorger = gebruikerType == GebruikerType.Mantelzorger;
+    viewer.ToonHandleiding(data, isMantelzorger);
+    handleidingListPanel.SetActive(false);
+}
+
 
     // --- NIEUW ---
-    public void StartNieuweHandleiding()
-    {
-        naamInputField.text = "";
-        naamInputPanel.SetActive(true); // popup tonen
+public void StartNieuweHandleiding()
+{
+    naamInputField.text = "";
+    naamInputPanel.SetActive(true);
 
-            if (handleidingListPanel != null)
+    if (handleidingListPanel != null)
         handleidingListPanel.SetActive(false);
-    }
+
+    // Bevestigknop koppelen aan nieuwe handleiding
+    bevestigKnop.onClick.RemoveAllListeners();
+    bevestigKnop.onClick.AddListener(BevestigNieuweHandleiding);
+    annuleerKnop.onClick.RemoveAllListeners();
+    annuleerKnop.onClick.AddListener(() => 
+    {
+        naamInputPanel.SetActive(false);
+        if (handleidingListPanel != null)
+            handleidingListPanel.SetActive(true);
+    });
+}
+
 
 private void BevestigNieuweHandleiding()
 {

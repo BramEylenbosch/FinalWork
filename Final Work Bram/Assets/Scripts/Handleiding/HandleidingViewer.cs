@@ -35,18 +35,22 @@ public class HandleidingViewer : MonoBehaviour
             fotoToevoegenKnop.gameObject.SetActive(false);
     }
 
-public void ToonHandleiding(HandleidingData data)
+public void ToonHandleiding(HandleidingData data, bool isMantelzorger)
 {
     huidigeHandleiding = data;
     huidigeIndex = 0;
     gameObject.SetActive(true);
 
+    // Alleen tonen als mantelzorger
+    fotoToevoegenKnop.gameObject.SetActive(isMantelzorger);
+
     // Start downloaden van foto's
-    if (huidigeHandleiding.fotoUrls.Count > 0)
+    if (huidigeHandleiding.fotoUrls != null && huidigeHandleiding.fotoUrls.Count > 0)
         StartCoroutine(DownloadFotos(huidigeHandleiding));
     else
         ToonPagina();
 }
+
 
 
     private void ToonPagina()
@@ -118,11 +122,11 @@ public async void FotoToevoegen(Sprite nieuweFoto)
         return;
     }
 
+// Voeg foto toe lokaal voor directe weergave
+huidigeHandleiding.fotos.Add(nieuweFoto); // ✅ keep alle bestaande foto's
+huidigeIndex = huidigeHandleiding.fotos.Count - 1;
+ToonPagina();
 
-    // Voeg foto toe lokaal voor directe weergave
-    huidigeHandleiding.fotos.Add(nieuweFoto);
-    huidigeIndex = huidigeHandleiding.fotos.Count - 1;
-    ToonPagina();
 
     // Upload de foto naar Firebase Storage
     Texture2D tex = nieuweFoto.texture;
@@ -201,10 +205,14 @@ public async void FotoToevoegen(Sprite nieuweFoto)
 
 public IEnumerator DownloadFotos(HandleidingData handleiding)
 {
-    handleiding.fotos.Clear();
+    if (handleiding.fotos == null)
+        handleiding.fotos = new List<Sprite>();
 
     foreach (string url in handleiding.fotoUrls)
     {
+        bool alGedownload = handleiding.fotos.Exists(f => f.name == url);
+        if (alGedownload) continue;
+
         using var www = UnityEngine.Networking.UnityWebRequestTexture.GetTexture(url);
         yield return www.SendWebRequest();
 
@@ -216,12 +224,14 @@ public IEnumerator DownloadFotos(HandleidingData handleiding)
 
         Texture2D tex = UnityEngine.Networking.DownloadHandlerTexture.GetContent(www);
         Sprite sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+        sprite.name = url; // ⚡ naam van sprite = url
         handleiding.fotos.Add(sprite);
     }
 
-    // Update viewer
     ToonPagina();
 }
+
+
 
 
 }
