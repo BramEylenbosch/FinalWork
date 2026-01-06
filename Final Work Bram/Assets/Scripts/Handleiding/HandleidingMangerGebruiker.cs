@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.Networking;
+using System.Collections;
 
 public class HandleidingManagerGebruiker : MonoBehaviour
 {
@@ -9,23 +11,28 @@ public class HandleidingManagerGebruiker : MonoBehaviour
     public Transform handleidingListParent;
     public GameObject handleidingButtonPrefab;
     public GameObject handleidingListPanel;
-
-    private List<HandleidingData> handleidingen = new List<HandleidingData>();
-
     public HandleidingViewerGebruiker viewer;
 
-    void Start()
+    private List<HandleidingData> handleidingen = new();
+
+    private async void Start()
     {
+        FirestoreHandleidingService service = new();
 
+        // 🔥 Laad handleidingen uit Firestore
+        handleidingen = await service.LaadHandleidingen();
 
-        // Laad opgeslagen handleidingen
-        handleidingen = DataOpslagSystem.LaadHandleidingen();
-
-        // Maak knop voor elke handleiding
         foreach (var h in handleidingen)
-            MaakKnopVoorHandleiding(h);
+        {
+            // ⬇️ Download alle foto's
+            foreach (string url in h.fotoUrls)
+            {
+                StartCoroutine(DownloadSprite(url, h));
+            }
 
-        // Zorg dat de lijst zichtbaar is
+            MaakKnopVoorHandleiding(h);
+        }
+
         if (handleidingListPanel != null)
             handleidingListPanel.SetActive(true);
     }
@@ -34,17 +41,14 @@ public class HandleidingManagerGebruiker : MonoBehaviour
     {
         GameObject knop = Instantiate(handleidingButtonPrefab, handleidingListParent);
 
-        // Zet alleen de naam op de knop
         TextMeshProUGUI naamText = knop.GetComponentInChildren<TextMeshProUGUI>();
         if (naamText != null)
             naamText.text = h.naam;
 
-        // Koppel de knop aan openen van handleiding
         Button mainButton = knop.GetComponent<Button>();
         if (mainButton != null)
             mainButton.onClick.AddListener(() => OpenHandleiding(h));
 
-        // Verwijder alle verwijderknoppen uit prefab (indien aanwezig)
         HandleidingButtonController controller = knop.GetComponent<HandleidingButtonController>();
         if (controller != null && controller.verwijderKnop != null)
             controller.verwijderKnop.gameObject.SetActive(false);
@@ -55,10 +59,29 @@ public class HandleidingManagerGebruiker : MonoBehaviour
         if (viewer != null)
         {
             viewer.ToonHandleiding(data);
-
             if (handleidingListPanel != null)
                 handleidingListPanel.SetActive(false);
         }
     }
-    
+
+    IEnumerator DownloadSprite(string url, HandleidingData handleiding)
+    {
+        using UnityWebRequest www = UnityWebRequestTexture.GetTexture(url);
+        yield return www.SendWebRequest();
+
+        if (www.result != UnityWebRequest.Result.Success)
+        {
+            Debug.LogError("[DownloadSprite] Fout: " + www.error);
+            yield break;
+        }
+
+        Texture2D tex = DownloadHandlerTexture.GetContent(www);
+        Sprite sprite = Sprite.Create(
+            tex,
+            new Rect(0, 0, tex.width, tex.height),
+            new Vector2(0.5f, 0.5f)
+        );
+
+        handleiding.fotos.Add(sprite);
+    }
 }

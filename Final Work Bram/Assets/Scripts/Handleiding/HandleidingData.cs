@@ -4,16 +4,17 @@ using UnityEngine;
 [System.Serializable]
 public class HandleidingData
 {
+    public string id; // unieke id van de handleiding
     public string naam;
-    public List<string> fotosBase64;
-
-    [System.NonSerialized]
-    public List<Sprite> fotos;
+    public List<Sprite> fotos;      // lokaal gebruik
+    public List<string> fotoUrls;   // Firebase opslag
 
     public HandleidingData(string naam)
     {
         this.naam = naam;
-        fotosBase64 = new List<string>();
-        fotos = new List<Sprite>(); // Altijd initialiseren!
+        this.fotos = new List<Sprite>();
+        this.fotoUrls = new List<string>();
+        this.id = System.Guid.NewGuid().ToString();
     }
 }
+

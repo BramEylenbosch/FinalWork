@@ -8,23 +8,11 @@ public static class DataOpslagSystem
 
     public static void SlaHandleidingenOp(List<HandleidingData> handleidingen)
     {
-        // Converteer sprites naar Base64
+        // Zorg dat fotoUrls altijd geïnitialiseerd zijn
         foreach (var h in handleidingen)
         {
-            if (h.fotosBase64 == null)
-                h.fotosBase64 = new List<string>();
-
-            h.fotosBase64.Clear();
-
-            if (h.fotos != null)
-            {
-                foreach (var foto in h.fotos)
-                {
-                    string b64 = SpriteToBase64(foto);
-                    if (!string.IsNullOrEmpty(b64))
-                        h.fotosBase64.Add(b64);
-                }
-            }
+            if (h.fotoUrls == null)
+                h.fotoUrls = new List<string>();
         }
 
         string json = JsonUtility.ToJson(new HandleidingDataWrapper(handleidingen), true);
@@ -45,27 +33,13 @@ public static class DataOpslagSystem
         if (wrapper == null || wrapper.handleidingen == null)
             return new List<HandleidingData>();
 
-        // Converteer Base64 terug naar Sprite
+        // Initialiseer runtime fotos lijst
         foreach (var h in wrapper.handleidingen)
         {
-            if (h.fotos == null)
-                h.fotos = new List<Sprite>();
-
-            h.fotos.Clear();
-
-            if (h.fotosBase64 != null)
-            {
-                foreach (var b64 in h.fotosBase64)
-                {
-                    if (!string.IsNullOrEmpty(b64))
-                    {
-                        Sprite s = Base64ToSprite(b64);
-                        if (s != null)
-                            h.fotos.Add(s);
-                    }
-                }
-            }
+            if (string.IsNullOrEmpty(h.id))
+                h.id = System.Guid.NewGuid().ToString();
         }
+
 
         return wrapper.handleidingen;
     }
@@ -80,36 +54,7 @@ public static class DataOpslagSystem
             this.handleidingen = handleidingen;
         }
     }
-
-private static string SpriteToBase64(Sprite sprite)
-{
-    if (sprite == null || sprite.texture == null)
-        return null;
-
-    Texture2D tex = sprite.texture;
-
-    // ⚡ check of texture readable is
-    if (!tex.isReadable)
-    {
-        Debug.LogError("Texture is niet readable: " + sprite.name);
-        return null;
-    }
-
-    byte[] bytes = tex.EncodeToPNG();
-    return System.Convert.ToBase64String(bytes);
-}
-
-
-    public static Sprite Base64ToSprite(string base64)
-    {
-        if (string.IsNullOrEmpty(base64)) return null;
-
-        byte[] bytes = System.Convert.FromBase64String(base64);
-        Texture2D tex = new Texture2D(2, 2);
-        if (!tex.LoadImage(bytes))
-            return null;
-
-        return Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
-    }
     #endregion
+
+    
 }

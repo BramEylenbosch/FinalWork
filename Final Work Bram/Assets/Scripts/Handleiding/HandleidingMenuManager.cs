@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections;
 
 public class HandleidingManager : MonoBehaviour
 {
@@ -24,56 +25,62 @@ public class HandleidingManager : MonoBehaviour
     public int maxHandleidingen = 8; // stel hier de limiet in
 
 
-    void Start()
+async void Start()
+{
+    // Laad handleidingen van de huidige gebruiker
+    handleidingen = await FirestoreHandleidingService.Instance.LaadHandleidingen();
+
+    foreach (var h in handleidingen)
     {
-
-        viewer.manager = this;
-
-        handleidingen = DataOpslagSystem.LaadHandleidingen();
-
-        foreach (var h in handleidingen)
-            MaakKnopVoorHandleiding(h);
-
-        // Knoppen koppelen
-        bevestigKnop.onClick.AddListener(BevestigNieuweHandleiding);
-        annuleerKnop.onClick.AddListener(() => naamInputPanel.SetActive(false));
-
-        if (handleidingen.Count == 0)
+        // Voor elke foto-URL, download als Sprite
+        foreach (string url in h.fotoUrls)
         {
-            VoegHandleidingToe("Koffiemachine");
-            VoegHandleidingToe("Microgolf");
+            StartCoroutine(DownloadSprite(url, h));
         }
 
-        annuleerKnop.onClick.RemoveAllListeners(); // voorkom dubbele listeners
-        annuleerKnop.onClick.AddListener(() =>
-        {
-            // Verberg popup
-            if (naamInputPanel != null)
-                naamInputPanel.SetActive(false);
-
-            // Toon de handleidinglijst weer
-            if (handleidingListPanel != null)
-                handleidingListPanel.SetActive(true);
-        });
-        
+        MaakKnopVoorHandleiding(h);
     }
 
-    public void VoegHandleidingToe(string naam)
+    // Toon lijstpanel
+    if (handleidingListPanel != null)
+        handleidingListPanel.SetActive(true);
+}
+    IEnumerator DownloadSprite(string url, HandleidingData handleiding)
     {
-        if (handleidingen.Count >= maxHandleidingen)
+        using var www = UnityEngine.Networking.UnityWebRequestTexture.GetTexture(url);
+        yield return www.SendWebRequest();
+
+        if (www.result != UnityEngine.Networking.UnityWebRequest.Result.Success)
         {
-            Debug.Log("Maximum aantal handleidingen bereikt!");
-            // Je kan hier eventueel ook een UI popup tonen
-            return;
+            Debug.LogError("[DownloadSprite] Fout: " + www.error);
+            yield break;
         }
 
-        var nieuwe = new HandleidingData(naam);
-        handleidingen.Add(nieuwe);
+        Texture2D tex = UnityEngine.Networking.DownloadHandlerTexture.GetContent(www);
+        Sprite sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
 
-        MaakKnopVoorHandleiding(nieuwe);
+        handleiding.fotos.Add(sprite);
+    }
 
-        DataOpslagSystem.SlaHandleidingenOp(handleidingen);
+public void VoegHandleidingToe(string naam)
+{
+    if (handleidingen.Count >= maxHandleidingen)
+    {
+        Debug.Log("Maximum aantal handleidingen bereikt!");
+        return;
+    }
+
+    var nieuwe = new HandleidingData(naam)
+    {
+        id = System.Guid.NewGuid().ToString() // ⚡ unieke id
+    };
+
+    handleidingen.Add(nieuwe);
+    MaakKnopVoorHandleiding(nieuwe);
+
+    DataOpslagSystem.SlaHandleidingenOp(handleidingen);
 }
+
     void OpenHandleiding(HandleidingData data)
     {
         viewer.ToonHandleiding(data);
