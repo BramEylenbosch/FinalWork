@@ -1,8 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using System;
+using Firebase.Storage;
 using System.Threading.Tasks;
 
 public class HandleidingViewer : MonoBehaviour
@@ -23,28 +24,31 @@ public class HandleidingViewer : MonoBehaviour
     {
         vorigeKnop.onClick.AddListener(Vorige);
         volgendeKnop.onClick.AddListener(Volgende);
-        fotoToevoegenKnop.onClick.RemoveAllListeners();
-        fotoToevoegenKnop.onClick.AddListener(NeemFoto);
         sluitKnop.onClick.AddListener(SluitViewer);
 
-        // Zet standaard verborgen
-        gameObject.SetActive(false);
+        // Foto toevoegen knop setup
+        fotoToevoegenKnop.onClick.RemoveAllListeners();
+        fotoToevoegenKnop.onClick.AddListener(() => NeemFoto());
 
-        // Alleen tonen als mantelzorger scene
-        if (manager == null)
-            fotoToevoegenKnop.gameObject.SetActive(false);
+        // Standaard verborgen
+        gameObject.SetActive(false);
     }
 
-public void ToonHandleiding(HandleidingData data, bool isMantelzorger)
+    /// <summary>
+    /// Open een handleiding en download eventueel de foto's
+    /// </summary>
+public void ToonHandleiding(HandleidingData data)
 {
     huidigeHandleiding = data;
     huidigeIndex = 0;
     gameObject.SetActive(true);
 
-    // Alleen tonen als mantelzorger
-    fotoToevoegenKnop.gameObject.SetActive(isMantelzorger);
+    // Foto-knop alleen tonen als de manager een mantelzorger is
+fotoToevoegenKnop.gameObject.SetActive(manager != null &&
+                                       manager.gebruikerType == HandleidingManager.GebruikerType.Mantelzorger);
 
-    // Start downloaden van foto's
+
+    // Start foto downloads
     if (huidigeHandleiding.fotoUrls != null && huidigeHandleiding.fotoUrls.Count > 0)
         StartCoroutine(DownloadFotos(huidigeHandleiding));
     else
@@ -52,13 +56,11 @@ public void ToonHandleiding(HandleidingData data, bool isMantelzorger)
 }
 
 
-
     private void ToonPagina()
     {
         if (huidigeHandleiding == null || paginaImage == null)
             return;
 
-        // Toon placeholder als er nog geen foto is
         if (huidigeHandleiding.fotos.Count == 0)
         {
             paginaImage.sprite = null;
@@ -68,7 +70,6 @@ public void ToonHandleiding(HandleidingData data, bool isMantelzorger)
             return;
         }
 
-        // Toon de huidige foto
         paginaImage.sprite = huidigeHandleiding.fotos[huidigeIndex];
         paginaImage.color = Color.white;
 
@@ -96,78 +97,132 @@ public void ToonHandleiding(HandleidingData data, bool isMantelzorger)
         }
     }
 
+    // Foto maken met NativeCamera
     public void NeemFoto()
     {
         NativeCamera.TakePicture((path) =>
         {
-            if (path != null)
+            if (string.IsNullOrEmpty(path)) return;
+
+            Texture2D tex = NativeCamera.LoadImageAtPath(path, 1024, false);
+            if (tex != null)
             {
-                Texture2D texture = NativeCamera.LoadImageAtPath(path, 1024, false);
-                if (texture != null)
-                    FotoToevoegen(Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f)));
+                Sprite sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+                StartCoroutine(FotoToevoegenAsync(sprite));
             }
         }, maxSize: 1024);
     }
 
-public async void FotoToevoegen(Sprite nieuweFoto)
-{
-    if (huidigeHandleiding == null || nieuweFoto == null)
+    /// <summary>
+    /// Upload foto naar Firebase en voeg lokaal & Firestore toe
+    /// </summary>
+    private IEnumerator FotoToevoegenAsync(Sprite nieuweFoto)
     {
-        Debug.LogError("[HandleidingViewer] Geen handleiding geselecteerd of foto is null!");
-        return;
-    }
-    if (string.IsNullOrEmpty(huidigeHandleiding?.id))
-    {
-        Debug.LogError("[HandleidingViewer] Kan foto niet uploaden: handleidingId is null!");
-        return;
-    }
+        if (huidigeHandleiding == null || nieuweFoto == null)
+        {
+            Debug.LogError("[HandleidingViewer] Geen handleiding geselecteerd of foto is null!");
+            yield break;
+        }
 
-// Voeg foto toe lokaal voor directe weergave
-huidigeHandleiding.fotos.Add(nieuweFoto); // ✅ keep alle bestaande foto's
-huidigeIndex = huidigeHandleiding.fotos.Count - 1;
-ToonPagina();
+        // Voeg lokaal toe
+        huidigeHandleiding.fotos.Add(nieuweFoto);
+        huidigeIndex = huidigeHandleiding.fotos.Count - 1;
+        ToonPagina();
 
+        // Upload naar Firebase Storage
+        Texture2D tex = nieuweFoto.texture;
+        Task<string> uploadTask = FirebaseStorageService.Instance.UploadFoto(tex, huidigeHandleiding.id);
 
-    // Upload de foto naar Firebase Storage
-    Texture2D tex = nieuweFoto.texture;
+        yield return new WaitUntil(() => uploadTask.IsCompleted);
 
-    if (tex == null)
-    {
-        Debug.LogError("[HandleidingViewer] Sprite heeft geen texture!");
-        return;
-    }
+        if (uploadTask.IsFaulted)
+        {
+            Debug.LogError("[HandleidingViewer] Fout bij upload: " + uploadTask.Exception);
+            yield break;
+        }
 
-    string handleidingId = huidigeHandleiding.id;
-    if (string.IsNullOrEmpty(handleidingId))
-    {
-        Debug.LogError("[HandleidingViewer] handleidingId is null of leeg!");
-        return;
-    }
-
-    try
-    {
-        // Upload naar Firebase Storage en krijg de download URL
-        string fotoUrl = await FirebaseStorageService.Instance.UploadFoto(tex, handleidingId);
+        string fotoUrl = uploadTask.Result;
 
         if (!string.IsNullOrEmpty(fotoUrl))
         {
-            // Voeg de URL toe in Firestore
-            await FirestoreHandleidingService.Instance.VoegFotoUrlToe(handleidingId, fotoUrl);
+            // Voeg URL toe in Firestore
+            Task firestoreTask = FirestoreHandleidingService.Instance.VoegFotoUrlToe(huidigeHandleiding.id, fotoUrl);
+            yield return new WaitUntil(() => firestoreTask.IsCompleted);
 
-            // Ook lokaal opslaan in HandleidingData
+            // Voeg lokaal toe aan fotoUrls en sla op
             if (huidigeHandleiding.fotoUrls == null)
                 huidigeHandleiding.fotoUrls = new List<string>();
-            huidigeHandleiding.fotoUrls.Add(fotoUrl);
 
-            Debug.Log("[HandleidingViewer] Foto succesvol geüpload en opgeslagen in Firestore!");
+            if (!huidigeHandleiding.fotoUrls.Contains(fotoUrl))
+                huidigeHandleiding.fotoUrls.Add(fotoUrl);
+
+            DataOpslagSystem.SlaHandleidingenOp(manager.GetHandleidingen());
+
+            Debug.Log("[HandleidingViewer] Foto succesvol geüpload en opgeslagen!");
         }
     }
-    catch (Exception ex)
+
+    /// <summary>
+    /// Download alle foto URLs als Sprites
+    /// </summary>
+public IEnumerator DownloadFotos(HandleidingData handleiding)
+{
+    if (handleiding.fotoUrls == null || handleiding.fotoUrls.Count == 0)
     {
-        Debug.LogError("[HandleidingViewer] Fout bij upload: " + ex);
+        ToonPagina();
+        yield break;
     }
+
+    // Maak een set van bestaande foto-URL's om duplicaten te voorkomen
+    HashSet<string> bestaandeUrls = new HashSet<string>(handleiding.fotoUrls);
+
+    // Zorg dat handleiding.fotos niet opnieuw wordt gecleard,
+    // zodat lokaal toegevoegde Sprites behouden blijven
+    List<Sprite> nieuweFotos = new List<Sprite>();
+
+    foreach (string url in handleiding.fotoUrls)
+    {
+        // Check of deze URL al als Sprite is toegevoegd
+        bool bestaatAl = handleiding.fotos.Exists(f => f.name == GetNameFromUrl(url));
+        if (bestaatAl)
+            continue;
+
+        using var www = UnityEngine.Networking.UnityWebRequestTexture.GetTexture(url);
+        yield return www.SendWebRequest();
+
+        if (www.result != UnityEngine.Networking.UnityWebRequest.Result.Success)
+        {
+            Debug.LogError("[DownloadFotos] Fout bij downloaden: " + www.error);
+            continue;
+        }
+
+        Texture2D tex = UnityEngine.Networking.DownloadHandlerTexture.GetContent(www);
+        Sprite sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+        {
+            name = GetNameFromUrl(url);// Geef een unieke naam op basis van URL
+        };
+
+        nieuweFotos.Add(sprite);
+    }
+
+    // Voeg de nieuw gedownloade foto’s toe aan de bestaande lijst
+    handleiding.fotos.AddRange(nieuweFotos);
+
+    // Update de viewer
+    ToonPagina();
 }
 
+/// <summary>
+/// Haal een unieke naam uit de URL voor vergelijking
+/// </summary>
+private string GetNameFromUrl(string url)
+{
+    if (string.IsNullOrEmpty(url))
+        return Guid.NewGuid().ToString(); // fallback
+
+    string[] parts = url.Split('/');
+    return parts.Length > 0 ? parts[^1] : Guid.NewGuid().ToString();
+}
 
 
     public void SluitViewer()
@@ -180,58 +235,4 @@ ToonPagina();
 
     // Getter voor huidige handleiding
     public HandleidingData HuidigeHandleiding => huidigeHandleiding;
-    public async void VoegFotoToeAanHandleiding(Sprite nieuweFoto)
-{
-    if (huidigeHandleiding == null || nieuweFoto == null) return;
-
-    Texture2D tex = nieuweFoto.texture;
-
-    // Upload naar Firebase Storage
-    string fotoUrl = await FirebaseStorageService.Instance.UploadFoto(tex, huidigeHandleiding.id);
-
-    // Voeg URL toe aan Firestore
-    await FirestoreHandleidingService.Instance.VoegFotoUrlToe(huidigeHandleiding.id, fotoUrl);
-
-    // Voeg lokaal toe
-    huidigeHandleiding.fotos.Add(nieuweFoto);
-    huidigeHandleiding.fotoUrls.Add(fotoUrl);
-
-    // Sla lokaal op
-    DataOpslagSystem.SlaHandleidingenOp(manager.GetHandleidingen());
-
-    // Update de viewer
-    ToonPagina();
-}
-
-public IEnumerator DownloadFotos(HandleidingData handleiding)
-{
-    if (handleiding.fotos == null)
-        handleiding.fotos = new List<Sprite>();
-
-    foreach (string url in handleiding.fotoUrls)
-    {
-        bool alGedownload = handleiding.fotos.Exists(f => f.name == url);
-        if (alGedownload) continue;
-
-        using var www = UnityEngine.Networking.UnityWebRequestTexture.GetTexture(url);
-        yield return www.SendWebRequest();
-
-        if (www.result != UnityEngine.Networking.UnityWebRequest.Result.Success)
-        {
-            Debug.LogError("Fout bij downloaden: " + www.error);
-            continue;
-        }
-
-        Texture2D tex = UnityEngine.Networking.DownloadHandlerTexture.GetContent(www);
-        Sprite sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
-        sprite.name = url; // ⚡ naam van sprite = url
-        handleiding.fotos.Add(sprite);
-    }
-
-    ToonPagina();
-}
-
-
-
-
 }

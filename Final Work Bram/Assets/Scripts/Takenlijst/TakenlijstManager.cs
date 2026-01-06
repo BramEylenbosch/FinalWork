@@ -4,6 +4,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using DatePicker;
+using Firebase.Firestore;
 
 public class TaaklijstManager : MonoBehaviour
 {
@@ -15,6 +16,7 @@ public class TaaklijstManager : MonoBehaviour
     [Header("Panel en knoppen")]
     public GameObject taakToevoegPanel;
     public Button openTaakPanelKnop;
+    public Toggle herhaalDagelijksToggle;
     public Button bevestigToevoegenKnop;
     public Button annuleerToevoegenKnop;
 
@@ -107,8 +109,10 @@ public class TaaklijstManager : MonoBehaviour
             id = Guid.NewGuid().ToString(),
             tekst = tekst,
             deadline = geselecteerdeDatum,
-            voltooid = false
+            voltooid = false,
+            herhaalDagelijks = herhaalDagelijksToggle.isOn,
         };
+
 
         await firestoreService.VoegTaakToe(nieuweTaak);
 
@@ -167,22 +171,57 @@ public class TaaklijstManager : MonoBehaviour
         HerlaadTaken();
     }
 
-    private async void HerlaadTaken()
+private async void HerlaadTaken()
+{
+    foreach (var item in taakItems)
+        Destroy(item.gameObject);
+
+    taakItems.Clear();
+    takenLijst.Clear();
+
+    var taken = await firestoreService.LaadTaken();
+
+    for (int i = 0; i < taken.Count; i++)
     {
-        foreach (var item in taakItems)
-            Destroy(item.gameObject);
+        var taak = taken[i];
 
-        taakItems.Clear();
-        takenLijst.Clear();
-
-        var taken = await firestoreService.LaadTaken();
-
-        foreach (var taak in taken)
+        // ✅ Dagelijkse herhaling check
+        if (taak.herhaalDagelijks && !string.IsNullOrEmpty(taak.deadline))
         {
-            takenLijst.Add(taak);
-            MaakTaakItem(taak);
+            if (DateTime.TryParseExact(
+                    taak.deadline, 
+                    "dd-MM-yyyy", 
+                    null, 
+                    System.Globalization.DateTimeStyles.None, 
+                    out DateTime taakDatum))
+            {
+                if (taakDatum < DateTime.Today)
+                {
+                    // Maak nieuwe taak voor vandaag
+                    Taak nieuweDagTaak = new Taak
+                    {
+                        id = Guid.NewGuid().ToString(),
+                        tekst = taak.tekst,
+                        deadline = DateTime.Today.ToString("dd-MM-yyyy"),
+                        voltooid = false,
+                        herhaalDagelijks = true
+                    };
+
+                    await firestoreService.VoegTaakToe(nieuweDagTaak);
+
+                    // Vervang oude taak voor UI
+                    taak = nieuweDagTaak;
+                    taken[i] = nieuweDagTaak;
+                }
+            }
         }
+
+        takenLijst.Add(taak);
+        MaakTaakItem(taak);
     }
+}
+
+
 
     private void PlanNotificatiesVoorVandaag(Taak taak)
     {

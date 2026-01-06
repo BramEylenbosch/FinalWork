@@ -90,10 +90,15 @@ public async void VoegHandleidingToe(string naam)
 
 private void OpenHandleiding(HandleidingData data)
 {
-    bool isMantelzorger = gebruikerType == GebruikerType.Mantelzorger;
-    viewer.ToonHandleiding(data, isMantelzorger);
+    // Zorg dat de viewer altijd een manager heeft
+    viewer.manager = this;
+
+    // Open handleiding (1 argument)
+    viewer.ToonHandleiding(data);
+
     handleidingListPanel.SetActive(false);
 }
+
 
 
     // --- NIEUW ---
@@ -150,33 +155,35 @@ private void BevestigNieuweHandleiding()
             mainButton.onClick.AddListener(() => OpenHandleiding(h));
     }
 
-    public void VerwijderHandleiding(HandleidingData handleiding)
+public async void VerwijderHandleiding(HandleidingData handleiding)
+{
+    if (handleiding == null) return;
+
+    // Verwijder uit Firestore
+    await FirestoreHandleidingService.Instance.VerwijderHandleiding(handleiding.id);
+
+    // Verwijder uit de lijst
+    handleidingen.Remove(handleiding);
+
+    // Opslaan lokaal
+    DataOpslagSystem.SlaHandleidingenOp(handleidingen);
+
+    // Verwijder bijbehorende knop uit de UI
+    foreach (Transform child in handleidingListParent)
     {
-        if (handleiding == null) return;
-
-        // Verwijder uit de lijst
-        handleidingen.Remove(handleiding);
-
-        // Opslaan
-        DataOpslagSystem.SlaHandleidingenOp(handleidingen);
-
-        // Verwijder bijbehorende knop uit de UI
-        foreach (Transform child in handleidingListParent)
+        TextMeshProUGUI txt = child.GetComponentInChildren<TextMeshProUGUI>();
+        if (txt != null && txt.text == handleiding.naam)
         {
-            TextMeshProUGUI txt = child.GetComponentInChildren<TextMeshProUGUI>();
-            if (txt != null && txt.text == handleiding.naam)
-            {
-                GameObject.Destroy(child.gameObject);
-                break;
-            }
+            GameObject.Destroy(child.gameObject);
+            break;
         }
+    }
 
-        // Als de viewer deze handleiding open heeft, sluit hem
+    // Als de viewer deze handleiding open heeft, sluit hem
     if (viewer != null && viewer.HuidigeHandleiding == handleiding)
     {
         viewer.SluitViewer();
     }
-
-    }
+}
 
 }

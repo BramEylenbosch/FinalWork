@@ -10,6 +10,7 @@ public class FirestoreHandleidingService
     private FirebaseFirestore db => FirebaseFirestore.DefaultInstance;
     private string GebruikerId => UserContext.UserId;
 
+
     public async Task VoegHandleidingToe(string handleidingId, string naam)
     {
         var data = new Dictionary<string, object>
@@ -80,5 +81,18 @@ public async Task<List<HandleidingData>> LaadHandleidingen()
 
     return lijst;
 }
+public async Task VerwijderHandleiding(string handleidingId)
+    {
+        if (string.IsNullOrEmpty(handleidingId))
+            return;
 
+        await db.Collection("gebruikers")
+                .Document(GebruikerId)
+                .Collection("handleidingen")
+                .Document(handleidingId)
+                .DeleteAsync();
+
+        Debug.Log("[Firestore] Handleiding verwijderd: " + handleidingId);
+    }
+    
 }
