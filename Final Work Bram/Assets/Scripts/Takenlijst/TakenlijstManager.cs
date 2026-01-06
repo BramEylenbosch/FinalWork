@@ -12,6 +12,8 @@ public class TaaklijstManager : MonoBehaviour
     public Transform taakContainer;
     public GameObject taakItemPrefab;
     public TMP_InputField taakInputField;
+    public GameObject taskPanel;
+
 
     [Header("Panel en knoppen")]
     public GameObject taakToevoegPanel;
@@ -31,7 +33,7 @@ public class TaaklijstManager : MonoBehaviour
     public bool isMantelzorger = false;
 
     private List<TaakItemController> taakItems = new();
-    private List<Taak> takenLijst = new();
+    public List<Taak> takenLijst = new();
 
     private FirestoreTakenService firestoreService;
 
@@ -221,6 +223,22 @@ private async void HerlaadTaken()
     }
 }
 
+public void ToonTakenVoorDag(List<Taak> takenVoorDag)
+{
+    // Eerst alle huidige UI items verwijderen
+    foreach (var item in taakItems)
+    {
+        Destroy(item.gameObject);
+    }
+    taakItems.Clear();
+
+    // Voeg nieuwe taken toe voor de geselecteerde dag
+    for (int i = 0; i < takenVoorDag.Count; i++)
+    {
+        MaakTaakItem(takenVoorDag[i]);
+    }
+}
+
 
 
     private void PlanNotificatiesVoorVandaag(Taak taak)
@@ -250,6 +268,18 @@ private async void HerlaadTaken()
             }
         }
     }
+
+public void ToonTaskPanel()
+{
+    if (taskPanel != null)
+        taskPanel.SetActive(true);
+}
+
+public void VerbergTaskPanel()
+{
+    if (taskPanel != null)
+        taskPanel.SetActive(false);
+}
 }
 
 #if UNITY_EDITOR
