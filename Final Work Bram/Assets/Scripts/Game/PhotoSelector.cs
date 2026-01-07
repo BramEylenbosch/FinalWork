@@ -33,7 +33,6 @@ public class PhotoSelector : MonoBehaviour
 
                     Sprite newSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.one * 0.5f);
 
-                    // Voeg de foto toe met naam + functie
                     VoegPersonalPhotoToe(newSprite);
                 }
             }, "Kies een foto", "image/*");
@@ -57,7 +56,6 @@ public class PhotoSelector : MonoBehaviour
         PersonalPhotoData data = new PersonalPhotoData(photo, naam, functie);
         gameManager.AddPersonalPhotoData(data);
 
-        // Reset input fields na toevoegen
         naamInput.text = "";
         functieInput.text = "";
     }

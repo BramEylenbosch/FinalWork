@@ -7,7 +7,6 @@ public class AppStartManager : MonoBehaviour
     {
         Debug.Log("AppStartManager Awake");
 
-        // Als er al een rol is gekozen → Home overslaan
         if (PlayerPrefs.HasKey("UserRole"))
         {
             string role = PlayerPrefs.GetString("UserRole");
@@ -25,7 +24,6 @@ public class AppStartManager : MonoBehaviour
         else
         {
             Debug.Log("Geen rol gevonden → Home blijft zichtbaar");
-            // niets doen → HomeScene blijft
         }
     }
 }

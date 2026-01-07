@@ -26,29 +26,26 @@ public class HandleidingViewer : MonoBehaviour
         volgendeKnop.onClick.AddListener(Volgende);
         sluitKnop.onClick.AddListener(SluitViewer);
 
-        // Foto toevoegen knop setup
+
         fotoToevoegenKnop.onClick.RemoveAllListeners();
         fotoToevoegenKnop.onClick.AddListener(() => NeemFoto());
 
-        // Standaard verborgen
+
         gameObject.SetActive(false);
     }
 
-    /// <summary>
-    /// Open een handleiding en download eventueel de foto's
-    /// </summary>
+
 public void ToonHandleiding(HandleidingData data)
 {
     huidigeHandleiding = data;
     huidigeIndex = 0;
     gameObject.SetActive(true);
 
-    // Foto-knop alleen tonen als de manager een mantelzorger is
+
 fotoToevoegenKnop.gameObject.SetActive(manager != null &&
                                        manager.gebruikerType == HandleidingManager.GebruikerType.Mantelzorger);
 
 
-    // Start foto downloads
     if (huidigeHandleiding.fotoUrls != null && huidigeHandleiding.fotoUrls.Count > 0)
         StartCoroutine(DownloadFotos(huidigeHandleiding));
     else
@@ -64,7 +61,7 @@ fotoToevoegenKnop.gameObject.SetActive(manager != null &&
         if (huidigeHandleiding.fotos.Count == 0)
         {
             paginaImage.sprite = null;
-            paginaImage.color = Color.gray; // lege placeholder
+            paginaImage.color = Color.gray; 
             vorigeKnop.interactable = false;
             volgendeKnop.interactable = false;
             return;
@@ -97,7 +94,7 @@ fotoToevoegenKnop.gameObject.SetActive(manager != null &&
         }
     }
 
-    // Foto maken met NativeCamera
+
     public void NeemFoto()
     {
         NativeCamera.TakePicture((path) =>
@@ -113,9 +110,7 @@ fotoToevoegenKnop.gameObject.SetActive(manager != null &&
         }, maxSize: 1024);
     }
 
-    /// <summary>
-    /// Upload foto naar Firebase en voeg lokaal & Firestore toe
-    /// </summary>
+
     private IEnumerator FotoToevoegenAsync(Sprite nieuweFoto)
     {
         if (huidigeHandleiding == null || nieuweFoto == null)
@@ -124,12 +119,12 @@ fotoToevoegenKnop.gameObject.SetActive(manager != null &&
             yield break;
         }
 
-        // Voeg lokaal toe
+
         huidigeHandleiding.fotos.Add(nieuweFoto);
         huidigeIndex = huidigeHandleiding.fotos.Count - 1;
         ToonPagina();
 
-        // Upload naar Firebase Storage
+
         Texture2D tex = nieuweFoto.texture;
         Task<string> uploadTask = FirebaseStorageService.Instance.UploadFoto(tex, huidigeHandleiding.id);
 
@@ -145,11 +140,11 @@ fotoToevoegenKnop.gameObject.SetActive(manager != null &&
 
         if (!string.IsNullOrEmpty(fotoUrl))
         {
-            // Voeg URL toe in Firestore
+
             Task firestoreTask = FirestoreHandleidingService.Instance.VoegFotoUrlToe(huidigeHandleiding.id, fotoUrl);
             yield return new WaitUntil(() => firestoreTask.IsCompleted);
 
-            // Voeg lokaal toe aan fotoUrls en sla op
+
             if (huidigeHandleiding.fotoUrls == null)
                 huidigeHandleiding.fotoUrls = new List<string>();
 
@@ -162,9 +157,7 @@ fotoToevoegenKnop.gameObject.SetActive(manager != null &&
         }
     }
 
-    /// <summary>
-    /// Download alle foto URLs als Sprites
-    /// </summary>
+
 public IEnumerator DownloadFotos(HandleidingData handleiding)
 {
     if (handleiding.fotoUrls == null || handleiding.fotoUrls.Count == 0)
@@ -173,16 +166,14 @@ public IEnumerator DownloadFotos(HandleidingData handleiding)
         yield break;
     }
 
-    // Maak een set van bestaande foto-URL's om duplicaten te voorkomen
+
     HashSet<string> bestaandeUrls = new HashSet<string>(handleiding.fotoUrls);
 
-    // Zorg dat handleiding.fotos niet opnieuw wordt gecleard,
-    // zodat lokaal toegevoegde Sprites behouden blijven
     List<Sprite> nieuweFotos = new List<Sprite>();
 
     foreach (string url in handleiding.fotoUrls)
     {
-        // Check of deze URL al als Sprite is toegevoegd
+
         bool bestaatAl = handleiding.fotos.Exists(f => f.name == GetNameFromUrl(url));
         if (bestaatAl)
             continue;
@@ -199,26 +190,24 @@ public IEnumerator DownloadFotos(HandleidingData handleiding)
         Texture2D tex = UnityEngine.Networking.DownloadHandlerTexture.GetContent(www);
         Sprite sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
         {
-            name = GetNameFromUrl(url);// Geef een unieke naam op basis van URL
+            name = GetNameFromUrl(url);
         };
 
         nieuweFotos.Add(sprite);
     }
 
-    // Voeg de nieuw gedownloade foto’s toe aan de bestaande lijst
+
     handleiding.fotos.AddRange(nieuweFotos);
 
-    // Update de viewer
+
     ToonPagina();
 }
 
-/// <summary>
-/// Haal een unieke naam uit de URL voor vergelijking
-/// </summary>
+
 private string GetNameFromUrl(string url)
 {
     if (string.IsNullOrEmpty(url))
-        return Guid.NewGuid().ToString(); // fallback
+        return Guid.NewGuid().ToString(); 
 
     string[] parts = url.Split('/');
     return parts.Length > 0 ? parts[^1] : Guid.NewGuid().ToString();
@@ -233,6 +222,5 @@ private string GetNameFromUrl(string url)
             manager.handleidingListPanel.SetActive(true);
     }
 
-    // Getter voor huidige handleiding
     public HandleidingData HuidigeHandleiding => huidigeHandleiding;
 }

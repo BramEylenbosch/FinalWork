@@ -10,7 +10,6 @@ public class KoppelingService
     {
         string mantelzorgerId = FirebaseAuth.DefaultInstance.CurrentUser.UserId;
 
-        // Opslaan bij gebruiker
         await db.Collection("gebruikers")
             .Document(gebruikerId)
             .Collection("profiel")
@@ -20,7 +19,6 @@ public class KoppelingService
                 gekoppeldeMantelzorgerId = mantelzorgerId
             });
 
-        // Opslaan bij mantelzorger
         await db.Collection("mantelzorgers")
             .Document(mantelzorgerId)
             .SetAsync(new

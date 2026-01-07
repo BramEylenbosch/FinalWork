@@ -23,7 +23,6 @@ public class FirebaseInit : MonoBehaviour
 
     private void Awake()
     {
-        // Start async initialisatie
         InitializeFirebase().ContinueWith(task =>
         {
             if (task.IsCompleted)

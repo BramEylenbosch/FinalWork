@@ -26,7 +26,6 @@ public class MantelzorgerCodeDisplay : MonoBehaviour
             return;
         }
 
-        // Toon de Firestore UserId van de mantelzorger
         string mantelzorgerCode = UserContext.UserId;
         codeText.text = "Deel deze code met de gebruiker:\n" + mantelzorgerCode;
 

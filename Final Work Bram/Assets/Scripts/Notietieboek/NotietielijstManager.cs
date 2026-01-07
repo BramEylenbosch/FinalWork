@@ -15,12 +15,12 @@ public class NotitieLijstManager : MonoBehaviour
     [Header("Popup Elements")]
     public GameObject popupPanel;
     public TMP_InputField popupTekstInput;
-    public TMP_InputField popupDatumInput; // alleen display
+    public TMP_InputField popupDatumInput;
     public RawImage popupFotoImage;
     public Button popupFotoKiesButton;
     public Button popupToevoegenButton;
     public Button popupAnnulerenButton;
-    public Button popupDatumKiesButton; // aparte knop voor picker
+    public Button popupDatumKiesButton;
 
     [Header("Hoofdinterface")]
     public GameObject scrollViewPanel;           
@@ -56,13 +56,6 @@ public class NotitieLijstManager : MonoBehaviour
 
     public void OpenNotitiePopup()
     {
-        // Reset notitie-tekst en foto
-        // popupTekstInput.text = "";
-        // gekozenFotoPad = "";
-        // popupFotoImage.texture = null;
-        // popupFotoImage.gameObject.SetActive(false);
-
-        // Reset datum placeholder
         geselecteerdeDatum = "";
         popupDatumInput.text = "";
 

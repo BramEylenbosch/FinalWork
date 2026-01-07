@@ -13,8 +13,8 @@ public class HandleidingManager : MonoBehaviour
     public HandleidingViewer viewer;
 
     [Header("Naam toevoegen UI")]
-    public GameObject naamInputPanel;          // popup panel met inputveld en OK/Annuleer
-    public TMP_InputField naamInputField;      // tekstveld
+    public GameObject naamInputPanel;     
+    public TMP_InputField naamInputField;   
     public Button bevestigKnop;
     public Button annuleerKnop;
 
@@ -22,17 +22,16 @@ public class HandleidingManager : MonoBehaviour
 
     public enum GebruikerType { Mantelzorger, Gebruiker }
     public GebruikerType gebruikerType;
-    public int maxHandleidingen = 8; // stel hier de limiet in
+    public int maxHandleidingen = 8; 
 
 
 async void Start()
 {
-    // Laad handleidingen van de huidige gebruiker
     handleidingen = await FirestoreHandleidingService.Instance.LaadHandleidingen();
 
     foreach (var h in handleidingen)
     {
-        // Voor elke foto-URL, download als Sprite
+
         foreach (string url in h.fotoUrls)
         {
             StartCoroutine(DownloadSprite(url, h));
@@ -41,7 +40,6 @@ async void Start()
         MaakKnopVoorHandleiding(h);
     }
 
-    // Toon lijstpanel
     if (handleidingListPanel != null)
         handleidingListPanel.SetActive(true);
 }
@@ -80,20 +78,17 @@ public async void VoegHandleidingToe(string naam)
     handleidingen.Add(nieuwe);
     MaakKnopVoorHandleiding(nieuwe);
 
-    // Opslaan lokaal
     DataOpslagSystem.SlaHandleidingenOp(handleidingen);
 
-    // Opslaan in Firestore
     await FirestoreHandleidingService.Instance.VoegHandleidingToe(id, naam);
 }
 
 
 private void OpenHandleiding(HandleidingData data)
 {
-    // Zorg dat de viewer altijd een manager heeft
+
     viewer.manager = this;
 
-    // Open handleiding (1 argument)
     viewer.ToonHandleiding(data);
 
     handleidingListPanel.SetActive(false);
@@ -101,7 +96,7 @@ private void OpenHandleiding(HandleidingData data)
 
 
 
-    // --- NIEUW ---
+
 public void StartNieuweHandleiding()
 {
     naamInputField.text = "";
@@ -110,7 +105,6 @@ public void StartNieuweHandleiding()
     if (handleidingListPanel != null)
         handleidingListPanel.SetActive(false);
 
-    // Bevestigknop koppelen aan nieuwe handleiding
     bevestigKnop.onClick.RemoveAllListeners();
     bevestigKnop.onClick.AddListener(BevestigNieuweHandleiding);
     annuleerKnop.onClick.RemoveAllListeners();
@@ -147,9 +141,8 @@ private void BevestigNieuweHandleiding()
 
         var controller = knop.GetComponent<HandleidingButtonController>();
         if (controller != null)
-            controller.Setup(h, this);  // ⚡ koppelt naam + verwijderknop automatisch
+            controller.Setup(h, this); 
 
-        // Hoofdknop openen handleiding
         Button mainButton = knop.GetComponent<Button>();
         if (mainButton != null)
             mainButton.onClick.AddListener(() => OpenHandleiding(h));
@@ -159,16 +152,12 @@ public async void VerwijderHandleiding(HandleidingData handleiding)
 {
     if (handleiding == null) return;
 
-    // Verwijder uit Firestore
     await FirestoreHandleidingService.Instance.VerwijderHandleiding(handleiding.id);
 
-    // Verwijder uit de lijst
     handleidingen.Remove(handleiding);
 
-    // Opslaan lokaal
     DataOpslagSystem.SlaHandleidingenOp(handleidingen);
 
-    // Verwijder bijbehorende knop uit de UI
     foreach (Transform child in handleidingListParent)
     {
         TextMeshProUGUI txt = child.GetComponentInChildren<TextMeshProUGUI>();
@@ -179,7 +168,6 @@ public async void VerwijderHandleiding(HandleidingData handleiding)
         }
     }
 
-    // Als de viewer deze handleiding open heeft, sluit hem
     if (viewer != null && viewer.HuidigeHandleiding == handleiding)
     {
         viewer.SluitViewer();

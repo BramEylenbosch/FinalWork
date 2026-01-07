@@ -7,15 +7,14 @@ public class FirestoreTakenService
 {
     FirebaseFirestore db => FirebaseFirestore.DefaultInstance;
 
-    // Dynamische targetUserId: mantelzorger of gebruiker
     private string TargetUserId
     {
         get
         {
             if (UserContext.UserRole == "Mantelzorger")
-                return UserContext.UserId;          // Mantelzorger schrijft naar eigen document
+                return UserContext.UserId;    
             else
-                return UserContext.CaretakerId;    // Gebruiker leest van gekoppelde mantelzorger
+                return UserContext.CaretakerId;  
         }
     }
 

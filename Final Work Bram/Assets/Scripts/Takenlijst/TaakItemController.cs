@@ -8,9 +8,9 @@ public class TaakItemController : MonoBehaviour
     public TextMeshProUGUI tekstText;
     public TextMeshProUGUI deadlineText;
     public Button verwijderKnop;
-    public Toggle voltooidToggle; // Voeg dit toe aan prefab
+    public Toggle voltooidToggle; 
 
-    // Event dat wordt afgevuurd als voltooid aan/uit wordt gezet
+
     public event Action<bool> onVoltooidChanged;
 
     [HideInInspector]
@@ -23,7 +23,6 @@ public void Setup(Taak t, Action<Taak> verwijderCallback)
     if (tekstText != null) tekstText.text = t.tekst;
     if (deadlineText != null) deadlineText.text = t.deadline;
 
-    // Verwijderknop alleen tonen als er een callback is (dus mantelzorger)
     if (verwijderKnop != null)
     {
         verwijderKnop.gameObject.SetActive(verwijderCallback != null);
@@ -38,7 +37,6 @@ public void Setup(Taak t, Action<Taak> verwijderCallback)
         }
     }
 
-    // Toggle event instellen
     if (voltooidToggle != null)
     {
         voltooidToggle.onValueChanged.RemoveAllListeners();

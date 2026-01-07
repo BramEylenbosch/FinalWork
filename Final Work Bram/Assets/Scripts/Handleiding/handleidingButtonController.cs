@@ -10,7 +10,6 @@ public class HandleidingButtonController : MonoBehaviour
     private HandleidingData handleiding;
     private HandleidingManager manager;
 
-    // Wordt aangeroepen na het instantiëren
 public void Setup(HandleidingData data, HandleidingManager manager)
 {
     Debug.Log("Setup aangeroepen voor: " + data.naam);

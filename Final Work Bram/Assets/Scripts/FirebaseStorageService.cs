@@ -15,7 +15,6 @@ public class FirebaseStorageService
         storage = FirebaseStorage.DefaultInstance;
     }
 
-    // Upload een foto naar Firebase Storage
     public async Task<string> UploadFoto(Texture2D texture, string handleidingId, string bestandsnaam = null)
     {
         if (texture == null)
@@ -35,13 +34,10 @@ public class FirebaseStorageService
         byte[] bytes = texture.EncodeToPNG();
         StorageReference refFoto = storage.GetReference($"handleidingen/{handleidingId}/{bestandsnaam}");
 
-        // Upload de bytes
         await refFoto.PutBytesAsync(bytes);
 
-        // Download URL ophalen
         var uri = await refFoto.GetDownloadUrlAsync();
 
-        // ⚡ Belangrijk: converteer Uri naar string
         string downloadUrl = uri.AbsoluteUri;
 
         Debug.Log("[FirebaseStorage] Foto geüpload: " + downloadUrl);

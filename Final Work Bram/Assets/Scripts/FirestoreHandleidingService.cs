@@ -30,7 +30,6 @@ public class FirestoreHandleidingService
         Debug.Log("[Firestore] Handleiding aangemaakt: " + naam);
     }
 
-    // Voeg URL van geüploade foto toe
 public async Task VoegFotoUrlToe(string handleidingId, string fotoUrl)
 {
     if (string.IsNullOrEmpty(handleidingId) || string.IsNullOrEmpty(fotoUrl))
@@ -44,7 +43,6 @@ public async Task VoegFotoUrlToe(string handleidingId, string fotoUrl)
                    .Collection("handleidingen")
                    .Document(handleidingId);
 
-    // Voeg toe of merge
     await docRef.SetAsync(new Dictionary<string, object>
     {
         { "fotoUrls", new List<string> { fotoUrl } }
@@ -54,7 +52,6 @@ public async Task VoegFotoUrlToe(string handleidingId, string fotoUrl)
 }
 
 
-    // Laad handleidingen inclusief foto URLs
 public async Task<List<HandleidingData>> LaadHandleidingen()
 {
     QuerySnapshot snapshot = await db

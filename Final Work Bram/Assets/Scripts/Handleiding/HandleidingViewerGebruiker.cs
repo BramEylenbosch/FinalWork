@@ -17,16 +17,16 @@ public class HandleidingViewerGebruiker : MonoBehaviour
 
     void Start()
     {
-        // Koppel de knoppen
+
         vorigeKnop.onClick.AddListener(Vorige);
         volgendeKnop.onClick.AddListener(Volgende);
         sluitKnop.onClick.AddListener(SluitViewer);
 
-        // Zet standaard verborgen
+
         gameObject.SetActive(false);
     }
 
-    // Toon een specifieke handleiding
+
     public void ToonHandleiding(HandleidingData data)
     {
         huidigeHandleiding = data;
@@ -36,13 +36,13 @@ public class HandleidingViewerGebruiker : MonoBehaviour
         ToonPagina();
     }
 
-    // Toon de huidige pagina
+
     private void ToonPagina()
     {
         if (huidigeHandleiding == null || huidigeHandleiding.fotos.Count == 0)
         {
             paginaImage.sprite = null;
-            paginaImage.color = Color.gray; // lege placeholder
+            paginaImage.color = Color.gray; 
             vorigeKnop.interactable = false;
             volgendeKnop.interactable = false;
             return;
@@ -55,7 +55,7 @@ public class HandleidingViewerGebruiker : MonoBehaviour
         volgendeKnop.interactable = huidigeIndex < huidigeHandleiding.fotos.Count - 1;
     }
 
-    // Ga naar volgende pagina
+
     public void Volgende()
     {
         if (huidigeHandleiding == null) return;
@@ -66,7 +66,7 @@ public class HandleidingViewerGebruiker : MonoBehaviour
         }
     }
 
-    // Ga naar vorige pagina
+
     public void Vorige()
     {
         if (huidigeHandleiding == null) return;
@@ -77,7 +77,7 @@ public class HandleidingViewerGebruiker : MonoBehaviour
         }
     }
 
-    // Viewer sluiten
+
     public void SluitViewer()
     {
         gameObject.SetActive(false);
@@ -87,7 +87,7 @@ public class HandleidingViewerGebruiker : MonoBehaviour
     }
 
 
-    // Getter voor huidige handleiding
+
     public HandleidingData HuidigeHandleiding
     {
         get { return huidigeHandleiding; }

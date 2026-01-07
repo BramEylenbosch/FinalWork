@@ -1,7 +1,7 @@
 using UnityEngine;
 using TMPro;
 using Firebase.Firestore;
-using UnityEngine.UI; // voor Button
+using UnityEngine.UI;
 using System.Collections.Generic;
 
 public class GebruikerKoppelMantelzorger : MonoBehaviour
@@ -10,40 +10,36 @@ public class GebruikerKoppelMantelzorger : MonoBehaviour
     [SerializeField] private TMP_InputField codeInputField;
     [SerializeField] private TextMeshProUGUI statusText;
     [SerializeField] private GameObject koppelPanel;
-    [SerializeField] private Button openKoppelPanelKnop; // Open-knop
+    [SerializeField] private Button openKoppelPanelKnop;
 
     private void Awake()
     {
-        // Panel standaard uit
         if (koppelPanel != null)
             koppelPanel.SetActive(true);
     }
 
     private void Start()
     {
-        // Listener toevoegen
         if (openKoppelPanelKnop != null)
             openKoppelPanelKnop.onClick.AddListener(OpenKoppelPanel);
     }
 
-    // Open panel
     public void OpenKoppelPanel()
     {
         if (koppelPanel != null)
             koppelPanel.SetActive(true);
 
         if (openKoppelPanelKnop != null)
-            openKoppelPanelKnop.gameObject.SetActive(false); // knop verbergen
+            openKoppelPanelKnop.gameObject.SetActive(false); 
     }
 
-    // Sluit panel
     public void SluitKoppelPanel()
     {
         if (koppelPanel != null)
             koppelPanel.SetActive(false);
 
         if (openKoppelPanelKnop != null)
-            openKoppelPanelKnop.gameObject.SetActive(true); // knop weer zichtbaar
+            openKoppelPanelKnop.gameObject.SetActive(true); 
     }
 
 public async void BevestigCode()
@@ -53,7 +49,6 @@ public async void BevestigCode()
 
     FirebaseFirestore db = FirebaseFirestore.DefaultInstance;
 
-    // check of mantelzorger bestaat
     var mantelzorgerDoc = await db.Collection("gebruikers").Document(ingevoerdeCode).GetSnapshotAsync();
     if (!mantelzorgerDoc.Exists)
     {
@@ -61,7 +56,6 @@ public async void BevestigCode()
         return;
     }
 
-    // Sla de CaretakerId lokaal op
     UserContext.CaretakerId = ingevoerdeCode;
     PlayerPrefs.SetString("caretakerId", ingevoerdeCode);
     PlayerPrefs.Save();
@@ -69,11 +63,10 @@ public async void BevestigCode()
     statusText.text = "Succes! Je bent gekoppeld aan de mantelzorger.";
     SluitKoppelPanel();
 
-    // Pas hier: laad nu de taken van de gekoppelde mantelzorger
     TaaklijstManager taaklijst = FindObjectOfType<TaaklijstManager>();
     if (taaklijst != null)
     {
-        await taaklijst.HerlaadTaken(); // zorg dat HerlaadTaken() async Task is
+        await taaklijst.HerlaadTaken(); 
     }
 }
 

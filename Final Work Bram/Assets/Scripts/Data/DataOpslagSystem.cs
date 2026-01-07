@@ -8,7 +8,6 @@ public static class DataOpslagSystem
 
     public static void SlaHandleidingenOp(List<HandleidingData> handleidingen)
     {
-        // Zorg dat fotoUrls altijd geïnitialiseerd zijn
         foreach (var h in handleidingen)
         {
             if (h.fotoUrls == null)
@@ -33,7 +32,7 @@ public static class DataOpslagSystem
         if (wrapper == null || wrapper.handleidingen == null)
             return new List<HandleidingData>();
 
-        // Initialiseer runtime fotos lijst
+
         foreach (var h in wrapper.handleidingen)
         {
             if (string.IsNullOrEmpty(h.id))

@@ -40,15 +40,15 @@ public class TaaklijstManager : MonoBehaviour
     [Header("Rol")]
     public bool isMantelzorger = false;
 
-    // Wordt true voor gebruikers die alleen read-only takenlijst zien
+
     public bool isReadOnly => !isMantelzorger;
 
     private List<TaakItemController> taakItems = new();
 
-    // 🔐 Alle taken
+  
     public List<Taak> alleTaken = new();
 
-    // 👁️ Filtered voor UI
+
     private List<Taak> zichtbareTaken = new();
 
     private FirestoreTakenService firestoreService;
@@ -62,21 +62,21 @@ public class TaaklijstManager : MonoBehaviour
     {
         firestoreService = new FirestoreTakenService();
 
-        // ❗ eerst alles loskoppelen
+
         openTaakPanelKnop.onClick.RemoveAllListeners();
         bevestigToevoegenKnop.onClick.RemoveAllListeners();
         annuleerToevoegenKnop.onClick.RemoveAllListeners();
         kiesDatumKnop.onClick.RemoveAllListeners();
         sluitTaskPanelKnop.onClick.RemoveAllListeners();
 
-        // ❗ daarna pas koppelen
+
         openTaakPanelKnop.onClick.AddListener(OpenToevoegPanel);
         bevestigToevoegenKnop.onClick.AddListener(BevestigTaakToevoegen);
         annuleerToevoegenKnop.onClick.AddListener(SluitToevoegPanel);
         kiesDatumKnop.onClick.AddListener(OpenDatePicker);
         sluitTaskPanelKnop.onClick.AddListener(SluitTaskPanel);
 
-        // UI aanpassen voor read-only gebruiker
+
         if (isReadOnly)
         {
             openTaakPanelKnop.gameObject.SetActive(false);
@@ -90,17 +90,17 @@ public class TaaklijstManager : MonoBehaviour
         _datePicker = new DatePicker.AndroidDatePicker();
 #endif
 
-        // Controleer of gebruiker gekoppeld is aan mantelzorger
+
         if (isReadOnly && string.IsNullOrEmpty(UserContext.CaretakerId))
         {
             Debug.LogWarning("[TaaklijstManager] CaretakerId is leeg, geen taken te laden!");
             return;
         }
 
-        // Taken laden
+
         await HerlaadTaken();
 
-        // Testnotificatie
+
         if (notificationManager != null && isMantelzorger)
         {
             InvokeRepeating(nameof(StuurTestNotificatie), 5f, 60f);
@@ -136,14 +136,14 @@ public void SluitTaskPanel()
     if (taskPanel != null)
         taskPanel.SetActive(false);
 
-    ToonCalendarPanel(); // altijd terug naar kalender
+    ToonCalendarPanel();
 }
  public void SluitToevoegPanel()
 {
     if (taakToevoegPanel != null)
         taakToevoegPanel.SetActive(false);
 
-    ToonCalendarPanel(); // altijd terug naar kalender
+    ToonCalendarPanel();
 }
     public void VerbergCalendarPanel()
     {
@@ -230,7 +230,6 @@ public void SluitTaskPanel()
             Action<Taak> verwijderCallback = isMantelzorger ? VerwijderTaak : null;
             taakItem.Setup(taak, verwijderCallback);
 
-            // Toggle interactable uitzetten voor gebruiker
             if (isReadOnly && taakItem.voltooidToggle != null)
                 taakItem.voltooidToggle.interactable = false;
 
@@ -285,7 +284,6 @@ public void SluitTaskPanel()
 
         alleTaken.AddRange(taken);
 
-        // Dagelijkse herhaling check
         List<Taak> takenOmTeRenderen = new List<Taak>();
         foreach (var taak in alleTaken)
         {
@@ -367,7 +365,6 @@ public void ToonCalendarPanel()
         string vandaag = DateTime.Today.ToString("dd-MM-yyyy");
         return alleTaken.Any(t => t.tekst == basisTaak.tekst && t.deadline == vandaag);
     }
-    // Voeg dit onderaan je TaaklijstManager class toe
     public void ToonTakenVoorDag(List<Taak> takenVoorDag)
     {
         RenderTaken(takenVoorDag);

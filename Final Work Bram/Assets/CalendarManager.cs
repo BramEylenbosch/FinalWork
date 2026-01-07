@@ -7,10 +7,10 @@ using TMPro;
 
 public class CalendarManager : MonoBehaviour
 {
-    public Transform calendarGridParent; // Assign CalendarPanel
+    public Transform calendarGridParent;
     public GameObject dayButtonPrefab;
-    public TaaklijstManager taaklijstManager; // Reference to your task manager
-public GameObject taskPanel; // sleep hier het panel in de Inspector
+    public TaaklijstManager taaklijstManager; 
+public GameObject taskPanel; 
 
     void Start()
     {
@@ -34,19 +34,16 @@ public GameObject taskPanel; // sleep hier het panel in de Inspector
 
 private void OnDayClicked(int day)
 {
-    // Verberg de kalender, voor mantelzorger én gebruiker
     if (taaklijstManager != null)
         taaklijstManager.VerbergCalendarPanel();
 
-    // Datum string
     string dagString = day.ToString("D2") + "-" + DateTime.Now.ToString("MM-yyyy");
 
-    // Filter taken
+
     var takenVoorDezeDag = taaklijstManager.alleTaken
         .Where(t => t.deadline.StartsWith(dagString))
         .ToList();
 
-    // Toon TaskPanel + taken
     taaklijstManager.ToonTaskPanel(dagString);
     taaklijstManager.ToonTakenVoorDag(takenVoorDezeDag);
 }

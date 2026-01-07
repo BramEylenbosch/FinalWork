@@ -57,7 +57,6 @@ void Start()
 }
 
 
-    // ---------- CARD CREATION ----------
 
     private void CreateStandardCards()
     {
@@ -80,7 +79,7 @@ void Start()
         {
             GameObject newCard = Instantiate(cardPrefab, cardGrid);
             MemoryCard card = newCard.GetComponent<MemoryCard>();
-            card.Setup(cardImages[id], id); // Naam leeg voor auto kaarten
+            card.Setup(cardImages[id], id); 
         }
     }
 
@@ -124,7 +123,7 @@ void Start()
         }
     }
 
-    // ---------- CARD SELECTION ----------
+
 
     public void CardSelected(MemoryCard card)
     {
@@ -169,7 +168,7 @@ void Start()
         }
     }
 
-    // ---------- PERSONAL PHOTO MANAGEMENT ----------
+
 
     public void AddPersonalPhotoData(PersonalPhotoData data)
     {
@@ -215,7 +214,7 @@ void Start()
         CreateCardsFromPersonalPhotos();
     }
 
-    // ---------- RESTART ----------
+
 
     public void RestartGame()
     {

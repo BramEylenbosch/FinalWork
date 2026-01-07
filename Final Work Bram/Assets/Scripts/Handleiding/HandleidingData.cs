@@ -5,10 +5,10 @@ using UnityEngine.UIElements;
 [System.Serializable]
 public class HandleidingData
 {
-    public string id; // unieke id van de handleiding
+    public string id;
     public string naam;
-    public List<Sprite> fotos;      // lokaal gebruik
-    public List<string> fotoUrls;   // Firebase opslag
+    public List<Sprite> fotos;   
+    public List<string> fotoUrls; 
     public List<string> videoUrls = new List<string>();
 
     public HandleidingData(string naam)

@@ -33,7 +33,6 @@ public class AuthManager : MonoBehaviour
             feedbackText.text = "Login succesvol: " + result.User.Email;
             Debug.Log("Login success: " + result.User.Email);
 
-            // Ga naar juiste scene
             if (UserContext.UserRole == "Mantelzorger")
                 SceneManager.LoadScene("MantelzorgerStartScene");
             else

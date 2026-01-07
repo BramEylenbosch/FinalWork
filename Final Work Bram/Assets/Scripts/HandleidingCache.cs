@@ -23,7 +23,6 @@ public static class HandleidingCache
         public List<string> lokaleFotoPaden;
     }
 
-    // Opslaan lokaal
     public static void SaveHandleidingen(List<HandleidingData> handleidingen)
     {
         List<HandleidingDataSerializable> serializableList = new List<HandleidingDataSerializable>();
@@ -39,8 +38,7 @@ public static class HandleidingCache
 
             foreach (var sprite in h.fotos)
             {
-                // Sprites kunnen niet direct opgeslagen worden, alleen paden
-                s.lokaleFotoPaden.Add(sprite.name); // bij het downloaden moet dit overeenkomen
+                s.lokaleFotoPaden.Add(sprite.name); 
             }
 
             serializableList.Add(s);
@@ -51,7 +49,7 @@ public static class HandleidingCache
         File.WriteAllText(cacheFile, json);
     }
 
-    // Laden lokaal
+
     public static List<HandleidingData> LoadHandleidingen()
     {
         if (!File.Exists(cacheFile)) return new List<HandleidingData>();
@@ -68,7 +66,6 @@ public static class HandleidingCache
                 fotoUrls = h.fotoUrls
             };
 
-            // Lokale sprites laden
             hd.fotos = new List<Sprite>();
             foreach (var pad in h.lokaleFotoPaden)
             {
@@ -79,7 +76,7 @@ public static class HandleidingCache
                     Texture2D tex = new Texture2D(2, 2);
                     tex.LoadImage(bytes);
                     hd.fotos.Add(Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f)));
-                    hd.fotos[hd.fotos.Count - 1].name = pad; // naam bewaren
+                    hd.fotos[hd.fotos.Count - 1].name = pad;
                 }
             }
 
@@ -89,7 +86,6 @@ public static class HandleidingCache
         return lijst;
     }
 
-    // Download een foto van Firebase en sla lokaal op
     public static async Task<string> DownloadEnSlaFotoOpLocaal(string fotoUrl, string bestandNaam)
     {
         using (UnityWebRequest www = UnityWebRequestTexture.GetTexture(fotoUrl))

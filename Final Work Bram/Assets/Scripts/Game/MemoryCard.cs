@@ -7,7 +7,7 @@ public class MemoryCard : MonoBehaviour
     public int cardId;
     public Image frontImage;
     public Image backImage;
-    public TMP_Text naamText; // label
+    public TMP_Text naamText;
 
     private bool isFlipped = false;
 

@@ -12,7 +12,7 @@ public class GebruikerInitializer : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject); // optioneel, als je wilt dat dit object blijft tussen scenes
+            DontDestroyOnLoad(gameObject); 
         }
         else
         {
@@ -20,7 +20,6 @@ public class GebruikerInitializer : MonoBehaviour
             return;
         }
 
-        // Laad UserId en CaretakerId
         UserContext.UserId = PlayerPrefs.GetString(UserContext.USER_ID_KEY, "");
         UserContext.CaretakerId = PlayerPrefs.GetString("caretakerId", "");
     }

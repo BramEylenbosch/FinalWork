@@ -19,12 +19,11 @@ public class HandleidingManagerGebruiker : MonoBehaviour
     {
         FirestoreHandleidingService service = new();
 
-        // 🔥 Laad handleidingen uit Firestore
         handleidingen = await service.LaadHandleidingen();
 
         foreach (var h in handleidingen)
         {
-            // ⬇️ Download alle foto's
+
             foreach (string url in h.fotoUrls)
             {
                 StartCoroutine(DownloadSprite(url, h));
