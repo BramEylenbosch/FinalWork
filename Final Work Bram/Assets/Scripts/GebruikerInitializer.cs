@@ -5,42 +5,44 @@ using System.Collections.Generic;
 
 public class GebruikerInitializer : MonoBehaviour
 {
-    public static GebruikerInitializer Instance; // Singleton
+    public static GebruikerInitializer Instance;
 
     private void Awake()
     {
-        // Zorg dat UserId en CaretakerId worden geladen
-        UserContext.UserId = PlayerPrefs.GetString(UserContext.USER_ID_KEY, "");
-        UserContext.CaretakerId = PlayerPrefs.GetString("caretakerId", "");
-
-        Debug.Log($"[GebruikerInitializer] UserId: {UserContext.UserId}, CaretakerId: {UserContext.CaretakerId}");
-    }
-
-
-
-    // Publieke methode voor aanmaken van nieuwe gebruiker
-    public async void MaakNieuweGebruiker()
-    {
-        if (!string.IsNullOrEmpty(UserContext.UserId))
+        if (Instance == null)
         {
-            Debug.Log("[GebruikerInitializer] UserId bestaat al, geen nieuwe gebruiker aangemaakt.");
+            Instance = this;
+            DontDestroyOnLoad(gameObject); // optioneel, als je wilt dat dit object blijft tussen scenes
+        }
+        else
+        {
+            Destroy(gameObject);
             return;
         }
 
-        string userId = Guid.NewGuid().ToString();
+        // Laad UserId en CaretakerId
+        UserContext.UserId = PlayerPrefs.GetString(UserContext.USER_ID_KEY, "");
+        UserContext.CaretakerId = PlayerPrefs.GetString("caretakerId", "");
+    }
+
+    public async void MaakNieuweGebruiker()
+    {
+        if (!string.IsNullOrEmpty(UserContext.UserId))
+            return;
+
+        string userId = System.Guid.NewGuid().ToString();
         PlayerPrefs.SetString(UserContext.USER_ID_KEY, userId);
         PlayerPrefs.Save();
 
         UserContext.UserId = userId;
 
-        FirebaseFirestore db = FirebaseFirestore.DefaultInstance;
-
-        var data = new Dictionary<string, object>
+        Firebase.Firestore.FirebaseFirestore db = Firebase.Firestore.FirebaseFirestore.DefaultInstance;
+        var data = new System.Collections.Generic.Dictionary<string, object>
         {
             { "mantelzorgerId", "" }
         };
-
         await db.Collection("gebruikers").Document(userId).SetAsync(data);
-        Debug.Log("[GebruikerInitializer] Nieuwe gebruiker aangemaakt: " + userId);
+        Debug.Log("Nieuwe gebruiker aangemaakt: " + userId);
     }
 }
+

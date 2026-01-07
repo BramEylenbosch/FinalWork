@@ -46,44 +46,35 @@ public class GebruikerKoppelMantelzorger : MonoBehaviour
             openKoppelPanelKnop.gameObject.SetActive(true); // knop weer zichtbaar
     }
 
-    public async void BevestigCode()
+public async void BevestigCode()
+{
+    string ingevoerdeCode = codeInputField.text.Trim();
+    if (string.IsNullOrEmpty(ingevoerdeCode)) return;
+
+    FirebaseFirestore db = FirebaseFirestore.DefaultInstance;
+
+    // check of mantelzorger bestaat
+    var mantelzorgerDoc = await db.Collection("gebruikers").Document(ingevoerdeCode).GetSnapshotAsync();
+    if (!mantelzorgerDoc.Exists)
     {
-        string ingevoerdeCode = codeInputField.text.Trim();
-
-        if (string.IsNullOrEmpty(ingevoerdeCode))
-        {
-            statusText.text = "Voer een geldige code in!";
-            return;
-        }
-
-        FirebaseFirestore db = FirebaseFirestore.DefaultInstance;
-
-        var mantelzorgerDoc = await db.Collection("gebruikers")
-                                      .Document(ingevoerdeCode)
-                                      .GetSnapshotAsync();
-
-        if (!mantelzorgerDoc.Exists)
-        {
-            statusText.text = "Deze code bestaat niet!";
-            return;
-        }
-
-        UserContext.CaretakerId = ingevoerdeCode;
-        PlayerPrefs.SetString("caretakerId", ingevoerdeCode);
-        PlayerPrefs.Save();
-
-        var updates = new Dictionary<string, object>
-        {
-            { "mantelzorgerId", ingevoerdeCode }
-        };
-
-        await db.Collection("gebruikers")
-                .Document(UserContext.UserId)
-                .UpdateAsync(updates);
-
-        statusText.text = "Succes! Je bent gekoppeld aan de mantelzorger.";
-        Debug.Log("Gebruiker succesvol gekoppeld aan mantelzorger: " + ingevoerdeCode);
-
-        SluitKoppelPanel(); // sluit panel en toont de knop terug
+        statusText.text = "Deze code bestaat niet!";
+        return;
     }
+
+    // Sla de CaretakerId lokaal op
+    UserContext.CaretakerId = ingevoerdeCode;
+    PlayerPrefs.SetString("caretakerId", ingevoerdeCode);
+    PlayerPrefs.Save();
+
+    statusText.text = "Succes! Je bent gekoppeld aan de mantelzorger.";
+    SluitKoppelPanel();
+
+    // Pas hier: laad nu de taken van de gekoppelde mantelzorger
+    TaaklijstManager taaklijst = FindObjectOfType<TaaklijstManager>();
+    if (taaklijst != null)
+    {
+        await taaklijst.HerlaadTaken(); // zorg dat HerlaadTaken() async Task is
+    }
+}
+
 }

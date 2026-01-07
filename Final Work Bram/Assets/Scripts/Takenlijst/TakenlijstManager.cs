@@ -6,6 +6,8 @@ using TMPro;
 using UnityEngine.UI;
 using DatePicker;
 using Firebase.Firestore;
+using System.Threading.Tasks;
+using UnityEngine.SocialPlatforms;
 
 public class TaaklijstManager : MonoBehaviour
 {
@@ -195,6 +197,7 @@ private async void BevestigTaakToevoegen()
     await firestoreService.VoegTaakToe(nieuweTaak);
 
     alleTaken.Add(nieuweTaak); // meteen toevoegen aan lokale lijst
+    LocalCache.SaveTaken(alleTaken);
     if (datum == DateTime.Today.ToString("dd-MM-yyyy"))
         zichtbareTaken.Add(nieuweTaak);
 
@@ -273,24 +276,35 @@ private async void VerwijderTaak(Taak taak)
 
 
 
-private async void HerlaadTaken()
+public async System.Threading.Tasks.Task HerlaadTaken()
 {
-    // Clear UI
+    // Clear oude UI
     foreach (var item in taakItems)
         Destroy(item.gameObject);
     taakItems.Clear();
     zichtbareTaken.Clear();
-
-    // Laad alle taken uit Firestore
     alleTaken.Clear();
-    var taken = await firestoreService.LaadTaken();
+
+    List<Taak> taken = new List<Taak>();
+
+    // 🔹 Eerst proberen van Firebase
+    try
+    {
+        taken = await firestoreService.LaadTaken(); // TargetUserId houdt rekening met gebruiker/mantelzorger
+        Debug.Log($"[TaaklijstManager] {taken.Count} taken van Firebase geladen.");
+    }
+    catch
+    {
+        Debug.LogWarning("[TaaklijstManager] Firebase laden mislukt, gebruik lokaal");
+        taken = LocalCache.LoadTaken();
+    }
+
     alleTaken.AddRange(taken);
 
+    // Dagelijkse herhaling check
     List<Taak> takenOmTeRenderen = new List<Taak>();
-
     foreach (var taak in alleTaken)
     {
-        // Dagelijkse herhaling check
         if (taak.herhaalDagelijks &&
             DateTime.TryParseExact(taak.deadline, "dd-MM-yyyy", null,
                 System.Globalization.DateTimeStyles.None, out DateTime taakDatum))
@@ -306,19 +320,24 @@ private async void HerlaadTaken()
                     herhaalDagelijks = true
                 };
 
-                await firestoreService.VoegTaakToe(nieuweDagTaak);
+                await firestoreService.VoegTaakToe(nieuweDagTaak); // optioneel naar Firebase
                 alleTaken.Add(nieuweDagTaak);
                 takenOmTeRenderen.Add(nieuweDagTaak);
-                continue; // overslaan van oude taak
+                continue;
             }
         }
 
         takenOmTeRenderen.Add(taak);
     }
 
-    // Render alle taken die relevant zijn voor vandaag / gekozen datum
+    // 🔹 Render de taken in UI
     RenderTaken(takenOmTeRenderen);
+
+    // 🔹 Sla de taken ook lokaal op
+    LocalCache.SaveTaken(alleTaken);
 }
+
+
 
 
 public void ToonTakenVoorDag(List<Taak> takenVoorDag)
