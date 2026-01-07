@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/MantelzorgerLogin.unity
+    guid: 1f9ff4df4011d54498dfbd4ab5a33a95
+  - enabled: 1
     path: Assets/Scenes/HomeScene.unity
     guid: 6ab3e271b4a09ad478d431e382ba8ec3
   - enabled: 1
@@ -42,8 +45,8 @@ EditorBuildSettings:
     path: Assets/Scenes/GebruikerHandleiding.unity
     guid: 53191c02a3b03d8458657f0d63b2d26c
   - enabled: 1
-    path: Assets/Scenes/MantelzorgerLogin.unity
-    guid: 1f9ff4df4011d54498dfbd4ab5a33a95
+    path: Assets/Scenes/TakenlijstGebruiker.unity
+    guid: d3240b0bbb9de844186a8ea84db95c6a
   - enabled: 0
     path: Assets/Scenes/Handleiding.unity
     guid: 40727817ef7366240a562583d032e1df

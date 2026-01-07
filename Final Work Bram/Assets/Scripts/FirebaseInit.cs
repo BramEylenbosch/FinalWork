@@ -1,24 +1,33 @@
-using UnityEngine;
 using Firebase;
 using Firebase.Auth;
+using UnityEngine;
+using System.Threading.Tasks;
 
 public class FirebaseInit : MonoBehaviour
 {
     public static FirebaseAuth auth;
 
-    void Awake()
+    public async Task InitializeFirebase()
     {
-        FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task => {
-            var dependencyStatus = task.Result;
-            if(dependencyStatus == DependencyStatus.Available)
-            {
-                auth = FirebaseAuth.DefaultInstance;
-                Debug.Log("Firebase Ready!");
-            }
-            else
-            {
-                Debug.LogError("Could not resolve all Firebase dependencies: " + dependencyStatus);
-            }
+        var dep = await FirebaseApp.CheckAndFixDependenciesAsync();
+        if (dep == DependencyStatus.Available)
+        {
+            auth = FirebaseAuth.DefaultInstance;
+            Debug.Log("[FirebaseInit] Firebase ready!");
+        }
+        else
+        {
+            Debug.LogError("[FirebaseInit] Firebase dependencies niet beschikbaar: " + dep);
+        }
+    }
+
+    private void Awake()
+    {
+        // Start async initialisatie
+        InitializeFirebase().ContinueWith(task =>
+        {
+            if (task.IsCompleted)
+                Debug.Log("[FirebaseInit] Init completed");
         });
     }
 }

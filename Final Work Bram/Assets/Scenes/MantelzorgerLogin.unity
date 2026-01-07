@@ -966,16 +966,16 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1243835357}
-        m_TargetAssemblyTypeName: AuthManager, Assembly-CSharp
-        m_MethodName: Login
-        m_Mode: 1
+      - m_Target: {fileID: 1449512079}
+        m_TargetAssemblyTypeName: SceneNavigator, Assembly-CSharp
+        m_MethodName: LoadScene
+        m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: 
+          m_StringArgument: MantelzorgerStartScene
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &1014646343
@@ -1800,6 +1800,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1449512080}
   - component: {fileID: 1449512079}
+  - component: {fileID: 1449512081}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -1834,6 +1835,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1449512081
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1449512078}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c3ade0bfb996aa4ea7ab3275a28c165, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  firstTimeScene: MantelzorgerLogin
+  normalScene: HomeScene
 --- !u!1 &1475125228
 GameObject:
   m_ObjectHideFlags: 0
@@ -2480,16 +2495,16 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1243835357}
-        m_TargetAssemblyTypeName: AuthManager, Assembly-CSharp
-        m_MethodName: Register
-        m_Mode: 1
+      - m_Target: {fileID: 1449512079}
+        m_TargetAssemblyTypeName: SceneNavigator, Assembly-CSharp
+        m_MethodName: LoadScene
+        m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: 
+          m_StringArgument: MantelzorgerStartScene
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &2103045382

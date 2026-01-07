@@ -1,61 +1,88 @@
-using UnityEngine;
-using UnityEngine.UI;
 using Firebase.Auth;
-using System.Threading.Tasks;
-using TMPro; // Voor TextMeshPro
-using UnityEngine.UI; // Voor Button
+using UnityEngine;
 using UnityEngine.SceneManagement;
-using Firebase.Extensions;
+using TMPro;
+
 public class AuthManager : MonoBehaviour
 {
     public TMP_InputField emailInput;
     public TMP_InputField passwordInput;
     public TextMeshProUGUI feedbackText;
 
-    public void Register()
+    public async void Login()
     {
-        string email = emailInput.text;
-        string password = passwordInput.text;
+        if (FirebaseInit.auth == null)
+        {
+            feedbackText.text = "Firebase nog niet klaar!";
+            Debug.LogError("FirebaseInit.auth is null!");
+            return;
+        }
 
-        FirebaseInit.auth.CreateUserWithEmailAndPasswordAsync(email, password).ContinueWith(task => {
-            if (task.IsCompleted && !task.IsFaulted)
-            {
-                feedbackText.text = "Gebruiker geregistreerd!";
-                Debug.Log("Registration successful!");
-            }
+        string email = emailInput.text.Trim();
+        string password = passwordInput.text.Trim();
+
+        if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+        {
+            feedbackText.text = "Vul email en wachtwoord in!";
+            return;
+        }
+
+        try
+        {
+            var result = await FirebaseInit.auth.SignInWithEmailAndPasswordAsync(email, password);
+            feedbackText.text = "Login succesvol: " + result.User.Email;
+            Debug.Log("Login success: " + result.User.Email);
+
+            // Ga naar juiste scene
+            if (UserContext.UserRole == "Mantelzorger")
+                SceneManager.LoadScene("MantelzorgerStartScene");
             else
-            {
-                feedbackText.text = "Registratie mislukt: " + task.Exception?.InnerException?.Message;
-                Debug.LogError(task.Exception);
-            }
-        });
+                SceneManager.LoadScene("GebruikerStartScene");
+        }
+        catch (Firebase.FirebaseException ex)
+        {
+            feedbackText.text = "Login mislukt: " + ex.Message;
+            Debug.LogError("Firebase login error: " + ex);
+        }
+        catch (System.Exception ex)
+        {
+            feedbackText.text = "Login mislukt: " + ex.Message;
+            Debug.LogError("Algemene login error: " + ex);
+        }
     }
 
-public void Login()
-{
-    string email = emailInput.text;
-    string password = passwordInput.text;
-
-    FirebaseInit.auth.SignInWithEmailAndPasswordAsync(email, password)
-        .ContinueWithOnMainThread(task =>
+    public async void Register()
+    {
+        if (FirebaseInit.auth == null)
         {
-            if (task.IsCompleted && !task.IsFaulted)
-            {
-                feedbackText.text = "Login succesvol!";
+            feedbackText.text = "Firebase nog niet klaar!";
+            return;
+        }
 
-                KoppelingService koppelingService = new KoppelingService();
-                koppelingService
-                    .KoppelMantelzorgerAanGebruiker(AppBootstrap.GebruikerId)
-                    .ContinueWithOnMainThread(_ =>
-                    {
-                        SceneManager.LoadScene("MantelzorgerStartScene");
-                    });
-            }
-            else
-            {
-                feedbackText.text = "Login mislukt";
-            }
-        });
+        string email = emailInput.text.Trim();
+        string password = passwordInput.text.Trim();
 
+        if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+        {
+            feedbackText.text = "Vul email en wachtwoord in!";
+            return;
+        }
+
+        try
+        {
+            var result = await FirebaseInit.auth.CreateUserWithEmailAndPasswordAsync(email, password);
+            feedbackText.text = "Registratie succesvol: " + result.User.Email;
+            Debug.Log("Registration success: " + result.User.Email);
+        }
+        catch (Firebase.FirebaseException ex)
+        {
+            feedbackText.text = "Registratie mislukt: " + ex.Message;
+            Debug.LogError("Firebase registration error: " + ex);
+        }
+        catch (System.Exception ex)
+        {
+            feedbackText.text = "Registratie mislukt: " + ex.Message;
+            Debug.LogError("Algemene registratie error: " + ex);
+        }
     }
 }
