@@ -76,8 +76,12 @@ private List<Taak> zichtbareTaken = new();
         kiesDatumKnop.onClick.AddListener(OpenDatePicker);
         sluitTaskPanelKnop.onClick.AddListener(SluitTaskPanel);
 
+    if (!isMantelzorger)
+    {
+        openTaakPanelKnop.gameObject.SetActive(false);
         taakToevoegPanel.SetActive(false);
-
+        herhaalDagelijksToggle.gameObject.SetActive(false);
+    }
 #if UNITY_EDITOR
         _datePicker = new UnityEditorCalendarTaak();
 #elif UNITY_ANDROID
@@ -110,8 +114,15 @@ private List<Taak> zichtbareTaken = new();
 
 public void SluitTaskPanel()
 {
-    taskPanel.SetActive(false);
+    Debug.Log("Close button clicked");
+    if (taskPanel != null)
+        taskPanel.SetActive(false);
+    else
+        Debug.LogWarning("taskPanel is null!");
+
+    ToonCalendarPanel();
 }
+
 
 private bool BestaatTaakVandaag(Taak basisTaak)
 {
@@ -221,19 +232,20 @@ private void MaakTaakItem(Taak taak)
 
     if (taakItem != null)
     {
-        // Koppel de taak direct
-        taakItem.Setup(taak, VerwijderTaak);
+        // Alleen mantelzorger krijgt verwijderknop
+        Action<Taak> verwijderCallback = isMantelzorger ? VerwijderTaak : null;
 
-        // Voeg toe aan lijst voor UI management
+        taakItem.Setup(taak, verwijderCallback);
+
         taakItems.Add(taakItem);
 
-        // Positie in container
         int index = taakItems.Count - 1;
         Vector3 pos = taakGO.transform.localPosition;
         pos.y = yStart - index * ySpacing;
         taakGO.transform.localPosition = pos;
     }
 }
+
 
 
 private async void VerwijderTaak(Taak taak)
@@ -357,6 +369,18 @@ public void VerbergTaskPanel()
 {
     if (taskPanel != null)
         taskPanel.SetActive(false);
+}
+
+public void VerbergCalendarPanel()
+{
+    if (calendarPanel != null)
+        calendarPanel.SetActive(false);
+}
+
+public void ToonCalendarPanel()
+{
+    if (calendarPanel != null)
+        calendarPanel.SetActive(true);
 }
 }
 

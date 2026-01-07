@@ -16,29 +16,35 @@ public class TaakItemController : MonoBehaviour
     [HideInInspector]
     public Taak taak;
 
-    public void Setup(Taak t, Action<Taak> verwijderCallback)
+public void Setup(Taak t, Action<Taak> verwijderCallback)
+{
+    taak = t;
+
+    if (tekstText != null) tekstText.text = t.tekst;
+    if (deadlineText != null) deadlineText.text = t.deadline;
+
+    // Verwijderknop alleen tonen als er een callback is (dus mantelzorger)
+    if (verwijderKnop != null)
     {
-        taak = t;
+        verwijderKnop.gameObject.SetActive(verwijderCallback != null);
 
-        if (tekstText != null) tekstText.text = t.tekst;
-        if (deadlineText != null) deadlineText.text = t.deadline;
-
-        if (verwijderKnop != null)
+        verwijderKnop.onClick.RemoveAllListeners();
+        if (verwijderCallback != null)
         {
-            verwijderKnop.onClick.RemoveAllListeners();
             verwijderKnop.onClick.AddListener(() =>
             {
                 verwijderCallback?.Invoke(taak);
             });
-
-        // Toggle event instellen
-        if (voltooidToggle != null)
-        {
-            voltooidToggle.onValueChanged.RemoveAllListeners();
-            voltooidToggle.onValueChanged.AddListener((value) => onVoltooidChanged?.Invoke(value));
-        }
         }
     }
+
+    // Toggle event instellen
+    if (voltooidToggle != null)
+    {
+        voltooidToggle.onValueChanged.RemoveAllListeners();
+        voltooidToggle.onValueChanged.AddListener((value) => onVoltooidChanged?.Invoke(value));
+    }
+}
 
     public void SetVoltooid(bool isVoltooid)
     {
