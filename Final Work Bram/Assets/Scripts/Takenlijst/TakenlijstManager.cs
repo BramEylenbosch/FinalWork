@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
@@ -26,6 +27,9 @@ public TextMeshProUGUI datumTitelText;
     public Toggle herhaalDagelijksToggle;
     public Button bevestigToevoegenKnop;
     public Button annuleerToevoegenKnop;
+
+    [Header("Calendar")]
+    public GameObject calendarPanel;
 
     [Header("Datum kiezen")]
     public Button kiesDatumKnop;
@@ -58,7 +62,14 @@ private List<Taak> zichtbareTaken = new();
     {
         firestoreService = new FirestoreTakenService();
 
-        // UI listeners
+        // ❗ eerst alles loskoppelen
+        openTaakPanelKnop.onClick.RemoveAllListeners();
+        bevestigToevoegenKnop.onClick.RemoveAllListeners();
+        annuleerToevoegenKnop.onClick.RemoveAllListeners();
+        kiesDatumKnop.onClick.RemoveAllListeners();
+        sluitTaskPanelKnop.onClick.RemoveAllListeners();
+
+        // ❗ daarna pas koppelen
         openTaakPanelKnop.onClick.AddListener(OpenToevoegPanel);
         bevestigToevoegenKnop.onClick.AddListener(BevestigTaakToevoegen);
         annuleerToevoegenKnop.onClick.AddListener(SluitToevoegPanel);
@@ -102,14 +113,29 @@ public void SluitTaskPanel()
     taskPanel.SetActive(false);
 }
 
+private bool BestaatTaakVandaag(Taak basisTaak)
+{
+    string vandaag = DateTime.Today.ToString("dd-MM-yyyy");
+    return alleTaken.Any(t =>
+        t.tekst == basisTaak.tekst &&
+        t.deadline == vandaag
+    );
+}
 
-    private void OpenToevoegPanel()
+
+
+    public void OpenToevoegPanel()
     {
-        Debug.Log("Klik ontvangen, isMantelzorger = " + isMantelzorger);
         if (!isMantelzorger) return;
 
         taakToevoegPanel.SetActive(true);
-        taakContainer.gameObject.SetActive(false);
+
+        if (calendarPanel != null)
+            calendarPanel.SetActive(false);
+
+        if (taskPanel != null)
+            taskPanel.SetActive(false);
+
         openTaakPanelKnop.gameObject.SetActive(false);
 
         taakInputField.text = "";
@@ -117,34 +143,54 @@ public void SluitTaskPanel()
         gekozenDatumText.text = "Geen datum gekozen";
     }
 
-    private void SluitToevoegPanel()
+
+    public void SluitToevoegPanel()
     {
         taakToevoegPanel.SetActive(false);
-        taakContainer.gameObject.SetActive(true);
+
+        if (calendarPanel != null)
+            calendarPanel.SetActive(true);
+
         openTaakPanelKnop.gameObject.SetActive(true);
     }
 
-    private async void BevestigTaakToevoegen()
+
+private async void BevestigTaakToevoegen()
+{
+    string tekst = taakInputField.text.Trim();
+    if (string.IsNullOrEmpty(tekst)) return;
+
+    string datum = geselecteerdeDatum; // gekozen datum
+    if (string.IsNullOrEmpty(datum))
+        datum = DateTime.Today.ToString("dd-MM-yyyy");
+
+    // Check op duplicaten
+    if (alleTaken.Any(t => t.tekst == tekst && t.deadline == datum))
     {
-        string tekst = taakInputField.text.Trim();
-        if (string.IsNullOrEmpty(tekst)) return;
-
-        Taak nieuweTaak = new Taak
-        {
-            id = Guid.NewGuid().ToString(),
-            tekst = tekst,
-            deadline = geselecteerdeDatum,
-            voltooid = false,
-            herhaalDagelijks = herhaalDagelijksToggle.isOn,
-        };
-
-
-        await firestoreService.VoegTaakToe(nieuweTaak);
-
-        PlanNotificatiesVoorVandaag(nieuweTaak);
+        Debug.Log("Taak bestaat al voor deze datum, toevoegen overgeslagen.");
         SluitToevoegPanel();
-        HerlaadTaken();
+        return;
     }
+
+    Taak nieuweTaak = new Taak
+    {
+        id = Guid.NewGuid().ToString(),
+        tekst = tekst,
+        deadline = datum,
+        voltooid = false,
+        herhaalDagelijks = herhaalDagelijksToggle.isOn,
+    };
+
+    await firestoreService.VoegTaakToe(nieuweTaak);
+
+    alleTaken.Add(nieuweTaak); // meteen toevoegen aan lokale lijst
+    if (datum == DateTime.Today.ToString("dd-MM-yyyy"))
+        zichtbareTaken.Add(nieuweTaak);
+
+    PlanNotificatiesVoorVandaag(nieuweTaak);
+    SluitToevoegPanel();
+    RenderTaken(zichtbareTaken);
+}
 
     private void OpenDatePicker()
     {
@@ -156,6 +202,17 @@ public void SluitTaskPanel()
         geselecteerdeDatum = value.ToString("dd-MM-yyyy");
         gekozenDatumText.text = geselecteerdeDatum;
     }
+
+private void RenderTaken(List<Taak> taken)
+{
+    foreach (var item in taakItems)
+        Destroy(item.gameObject);
+    taakItems.Clear();
+
+    foreach (var taak in taken)
+        MaakTaakItem(taak);
+}
+
 
     private void MaakTaakItem(Taak taak)
     {
@@ -198,72 +255,57 @@ public void SluitTaskPanel()
 
 private async void HerlaadTaken()
 {
+    // Clear UI
     foreach (var item in taakItems)
         Destroy(item.gameObject);
-
     taakItems.Clear();
-    alleTaken.Clear();
     zichtbareTaken.Clear();
 
+    // Laad alle taken uit Firestore
+    alleTaken.Clear();
     var taken = await firestoreService.LaadTaken();
+    alleTaken.AddRange(taken);
 
-    foreach (var taak in taken)
-        alleTaken.Add(taak);
+    List<Taak> takenOmTeRenderen = new List<Taak>();
 
-    for (int i = 0; i < taken.Count; i++)
+    foreach (var taak in alleTaken)
     {
-        var taak = taken[i];
-
-        // ✅ Dagelijkse herhaling check
-        if (taak.herhaalDagelijks && !string.IsNullOrEmpty(taak.deadline))
+        // Dagelijkse herhaling check
+        if (taak.herhaalDagelijks &&
+            DateTime.TryParseExact(taak.deadline, "dd-MM-yyyy", null,
+                System.Globalization.DateTimeStyles.None, out DateTime taakDatum))
         {
-            if (DateTime.TryParseExact(
-                    taak.deadline, 
-                    "dd-MM-yyyy", 
-                    null, 
-                    System.Globalization.DateTimeStyles.None, 
-                    out DateTime taakDatum))
+            if (taakDatum < DateTime.Today && !BestaatTaakVandaag(taak))
             {
-                if (taakDatum < DateTime.Today)
+                Taak nieuweDagTaak = new Taak
                 {
-                    // Maak nieuwe taak voor vandaag
-                    Taak nieuweDagTaak = new Taak
-                    {
-                        id = Guid.NewGuid().ToString(),
-                        tekst = taak.tekst,
-                        deadline = DateTime.Today.ToString("dd-MM-yyyy"),
-                        voltooid = false,
-                        herhaalDagelijks = true
-                    };
+                    id = Guid.NewGuid().ToString(),
+                    tekst = taak.tekst,
+                    deadline = DateTime.Today.ToString("dd-MM-yyyy"),
+                    voltooid = false,
+                    herhaalDagelijks = true
+                };
 
-                    await firestoreService.VoegTaakToe(nieuweDagTaak);
-
-                    // Vervang oude taak voor UI
-                    taak = nieuweDagTaak;
-                    taken[i] = nieuweDagTaak;
-                }
+                await firestoreService.VoegTaakToe(nieuweDagTaak);
+                alleTaken.Add(nieuweDagTaak);
+                takenOmTeRenderen.Add(nieuweDagTaak);
+                continue; // overslaan van oude taak
             }
         }
 
-            zichtbareTaken.Add(taak);
-        MaakTaakItem(taak);
+        takenOmTeRenderen.Add(taak);
     }
+
+    // Render alle taken die relevant zijn voor vandaag / gekozen datum
+    RenderTaken(takenOmTeRenderen);
 }
+
 
 public void ToonTakenVoorDag(List<Taak> takenVoorDag)
 {
-    foreach (var item in taakItems)
-        Destroy(item.gameObject);
-
-    taakItems.Clear();
-    zichtbareTaken.Clear();
-
-    foreach (var taak in takenVoorDag)
-    {
-        zichtbareTaken.Add(taak);
-        MaakTaakItem(taak);
-    }
+    RenderTaken(takenVoorDag);
 }
+
 
 
 

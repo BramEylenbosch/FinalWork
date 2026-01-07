@@ -383,7 +383,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 126347908}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 200576393}
+        m_TargetAssemblyTypeName: TaaklijstManager, Assembly-CSharp
+        m_MethodName: SluitToevoegPanel
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &126347908
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -615,11 +627,12 @@ MonoBehaviour:
   herhaalDagelijksToggle: {fileID: 817305845}
   bevestigToevoegenKnop: {fileID: 1715681325}
   annuleerToevoegenKnop: {fileID: 126347907}
+  calendarPanel: {fileID: 1560419014}
   kiesDatumKnop: {fileID: 536241090}
   gekozenDatumText: {fileID: 1045247211}
   notificationManager: {fileID: 1709892824}
   isMantelzorger: 1
-  takenLijst: []
+  alleTaken: []
 --- !u!1001 &417516333
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1220,7 +1233,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 755437409}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 200576393}
+        m_TargetAssemblyTypeName: TaaklijstManager, Assembly-CSharp
+        m_MethodName: OpenToevoegPanel
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &755437409
 MonoBehaviour:
   m_ObjectHideFlags: 0

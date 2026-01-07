@@ -19,5 +19,6 @@ public class Taak
 
     // Nieuwe property: herhaal dagelijks
     [FirestoreProperty]
-    public bool herhaalDagelijks { get; set; } = false;
+    public bool herhaalDagelijks { get; set; }
+
 }
