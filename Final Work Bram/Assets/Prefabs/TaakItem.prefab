@@ -333,7 +333,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 1400, y: 0}
+  m_AnchoredPosition: {x: 500, y: 0}
   m_SizeDelta: {x: 300, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4246792079552054391
@@ -479,10 +479,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8ec21ecbd66bed34d8ba53cfd2d08ff7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  taakText: {fileID: 4185479637402426020}
+  tekstText: {fileID: 4185479637402426020}
   deadlineText: {fileID: 6684995173856197672}
+  verwijderKnop: {fileID: 4234030271117783050}
   voltooidToggle: {fileID: 2714762606059188794}
-  deleteButton: {fileID: 4234030271117783050}
 --- !u!1 &5804742475999004289
 GameObject:
   m_ObjectHideFlags: 0

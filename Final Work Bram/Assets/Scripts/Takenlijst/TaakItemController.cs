@@ -1,52 +1,50 @@
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using System;
 
 public class TaakItemController : MonoBehaviour
 {
-    public TextMeshProUGUI taakText;
-    public TextMeshProUGUI deadlineText; 
-    public Toggle voltooidToggle;
-    public Button deleteButton;
+    public TextMeshProUGUI tekstText;
+    public TextMeshProUGUI deadlineText;
+    public Button verwijderKnop;
+    public Toggle voltooidToggle; // Voeg dit toe aan prefab
 
-    private Action<TaakItemController> onDelete;
+    // Event dat wordt afgevuurd als voltooid aan/uit wordt gezet
     public event Action<bool> onVoltooidChanged;
 
-    public void Setup(string tekst, string deadline, Action<TaakItemController> onDelete)
+    [HideInInspector]
+    public Taak taak;
+
+    public void Setup(Taak t, Action<Taak> verwijderCallback)
     {
-        taakText.text = tekst;
-        deadlineText.text = string.IsNullOrEmpty(deadline) ? "" : $"{deadline}";
-        this.onDelete = onDelete;
+        taak = t;
 
-        // Delete-knop alleen zichtbaar en actief als er een verwijderfunctie is
-        if (onDelete != null)
+        if (tekstText != null) tekstText.text = t.tekst;
+        if (deadlineText != null) deadlineText.text = t.deadline;
+
+        if (verwijderKnop != null)
         {
-            deleteButton.gameObject.SetActive(true);
-            deleteButton.onClick.RemoveAllListeners();
-            deleteButton.onClick.AddListener(() => onDelete(this));
-        }
-        else
+            verwijderKnop.onClick.RemoveAllListeners();
+            verwijderKnop.onClick.AddListener(() =>
+            {
+                verwijderCallback?.Invoke(taak);
+            });
+
+        // Toggle event instellen
+        if (voltooidToggle != null)
         {
-            deleteButton.gameObject.SetActive(false);
+            voltooidToggle.onValueChanged.RemoveAllListeners();
+            voltooidToggle.onValueChanged.AddListener((value) => onVoltooidChanged?.Invoke(value));
         }
-
-        voltooidToggle.onValueChanged.RemoveAllListeners();
-        voltooidToggle.onValueChanged.AddListener(OnToggleChanged);
-
-        OnToggleChanged(voltooidToggle.isOn);
-    }
-
-    private void OnToggleChanged(bool isAan)
-    {
-        taakText.fontStyle = isAan ? FontStyles.Strikethrough : FontStyles.Normal;
-        taakText.color = isAan ? Color.gray : Color.black;
-
-        onVoltooidChanged?.Invoke(isAan);
+        }
     }
 
     public void SetVoltooid(bool isVoltooid)
     {
-        voltooidToggle.isOn = isVoltooid;
+        if (voltooidToggle != null)
+            voltooidToggle.isOn = isVoltooid;
+
+        tekstText.color = isVoltooid ? Color.gray : Color.black;
     }
 }

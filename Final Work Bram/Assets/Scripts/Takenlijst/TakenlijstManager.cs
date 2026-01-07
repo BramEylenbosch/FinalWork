@@ -214,44 +214,52 @@ private void RenderTaken(List<Taak> taken)
 }
 
 
-    private void MaakTaakItem(Taak taak)
+private void MaakTaakItem(Taak taak)
+{
+    GameObject taakGO = Instantiate(taakItemPrefab, taakContainer);
+    TaakItemController taakItem = taakGO.GetComponent<TaakItemController>();
+
+    if (taakItem != null)
     {
-        GameObject taakGO = Instantiate(taakItemPrefab, taakContainer);
-        TaakItemController taakItem = taakGO.GetComponent<TaakItemController>();
+        // Koppel de taak direct
+        taakItem.Setup(taak, VerwijderTaak);
 
-        if (isMantelzorger)
-            taakItem.Setup(taak.tekst, taak.deadline, VerwijderTaak);
-        else
-            taakItem.Setup(taak.tekst, taak.deadline, null);
-
-        taakItem.SetVoltooid(taak.voltooid);
-
-        taakItem.onVoltooidChanged += async (isVoltooid) =>
-        {
-            taak.voltooid = isVoltooid;
-            await firestoreService.VoegTaakToe(taak);
-        };
-
+        // Voeg toe aan lijst voor UI management
         taakItems.Add(taakItem);
 
+        // Positie in container
         int index = taakItems.Count - 1;
         Vector3 pos = taakGO.transform.localPosition;
         pos.y = yStart - index * ySpacing;
         taakGO.transform.localPosition = pos;
     }
+}
 
-    private async void VerwijderTaak(TaakItemController taakItem)
+
+private async void VerwijderTaak(Taak taak)
+{
+    if (taak == null) return;
+
+    // Annuleer notificaties
+    notificationManager?.AnnuleerNotificatiesVoorTaak(taak.tekst);
+
+    // Verwijder uit Firestore
+    await firestoreService.VerwijderTaak(taak.id);
+
+    // Verwijder uit lokale lijsten
+    alleTaken.Remove(taak);
+    zichtbareTaken.Remove(taak);
+
+    // Verwijder UI element
+    TaakItemController item = taakItems.Find(i => i.taak == taak);
+    if (item != null)
     {
-        int index = taakItems.IndexOf(taakItem);
-        if (index < 0) return;
-
-        Taak taak = zichtbareTaken[index]; // ✅ JUIST
-
-        notificationManager?.AnnuleerNotificatiesVoorTaak(taak.tekst);
-
-        await firestoreService.VerwijderTaak(taak.id);
-        HerlaadTaken();
+        taakItems.Remove(item);
+        Destroy(item.gameObject);
     }
+}
+
+
 
 private async void HerlaadTaken()
 {
