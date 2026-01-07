@@ -34,16 +34,15 @@ public GameObject taskPanel; // sleep hier het panel in de Inspector
 
 private void OnDayClicked(int day)
 {
-    string dagString = day.ToString("D2") + "-" + DateTime.Now.ToString("MM-yyyy");
+    string datum = day.ToString("D2") + "-" + DateTime.Now.ToString("MM-yyyy");
 
-    var takenVoorDezeDag = taaklijstManager.takenLijst
-        .Where(t => t.deadline == dagString)
-        .ToList();
+var takenVoorDezeDag = taaklijstManager.alleTaken
+    .Where(t => t.deadline == datum)
+    .ToList();
 
-    taaklijstManager.ToonTakenVoorDag(takenVoorDezeDag);
+taaklijstManager.ToonTakenVoorDag(takenVoorDezeDag);
+taaklijstManager.ToonTaskPanel(datum);
 
-    // Open het panel
-    taaklijstManager.ToonTaskPanel();
 }
 
 

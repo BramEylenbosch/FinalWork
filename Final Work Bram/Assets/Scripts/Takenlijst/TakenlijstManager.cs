@@ -14,6 +14,11 @@ public class TaaklijstManager : MonoBehaviour
     public TMP_InputField taakInputField;
     public GameObject taskPanel;
 
+    [Header("Task Panel")]
+public Button sluitTaskPanelKnop;
+public TextMeshProUGUI datumTitelText;
+
+
 
     [Header("Panel en knoppen")]
     public GameObject taakToevoegPanel;
@@ -32,8 +37,14 @@ public class TaaklijstManager : MonoBehaviour
     [Header("Rol")]
     public bool isMantelzorger = false;
 
-    private List<TaakItemController> taakItems = new();
-    public List<Taak> takenLijst = new();
+private List<TaakItemController> taakItems = new();
+
+// 🔐 Blijft ALTIJD intact
+public List<Taak> alleTaken = new();
+
+// 👁️ Wordt gefilterd
+private List<Taak> zichtbareTaken = new();
+
 
     private FirestoreTakenService firestoreService;
 
@@ -52,6 +63,7 @@ public class TaaklijstManager : MonoBehaviour
         bevestigToevoegenKnop.onClick.AddListener(BevestigTaakToevoegen);
         annuleerToevoegenKnop.onClick.AddListener(SluitToevoegPanel);
         kiesDatumKnop.onClick.AddListener(OpenDatePicker);
+        sluitTaskPanelKnop.onClick.AddListener(SluitTaskPanel);
 
         taakToevoegPanel.SetActive(false);
 
@@ -79,6 +91,17 @@ public class TaaklijstManager : MonoBehaviour
             DateTime.Now.AddSeconds(2)
         );
     }
+    public void ToonTaskPanel(string datum)
+{
+    datumTitelText.text = datum;
+    taskPanel.SetActive(true);
+}
+
+public void SluitTaskPanel()
+{
+    taskPanel.SetActive(false);
+}
+
 
     private void OpenToevoegPanel()
     {
@@ -165,7 +188,7 @@ public class TaaklijstManager : MonoBehaviour
         int index = taakItems.IndexOf(taakItem);
         if (index < 0) return;
 
-        Taak taak = takenLijst[index];
+        Taak taak = zichtbareTaken[index]; // ✅ JUIST
 
         notificationManager?.AnnuleerNotificatiesVoorTaak(taak.tekst);
 
@@ -179,9 +202,13 @@ private async void HerlaadTaken()
         Destroy(item.gameObject);
 
     taakItems.Clear();
-    takenLijst.Clear();
+    alleTaken.Clear();
+    zichtbareTaken.Clear();
 
     var taken = await firestoreService.LaadTaken();
+
+    foreach (var taak in taken)
+        alleTaken.Add(taak);
 
     for (int i = 0; i < taken.Count; i++)
     {
@@ -218,26 +245,27 @@ private async void HerlaadTaken()
             }
         }
 
-        takenLijst.Add(taak);
+            zichtbareTaken.Add(taak);
         MaakTaakItem(taak);
     }
 }
 
 public void ToonTakenVoorDag(List<Taak> takenVoorDag)
 {
-    // Eerst alle huidige UI items verwijderen
     foreach (var item in taakItems)
-    {
         Destroy(item.gameObject);
-    }
-    taakItems.Clear();
 
-    // Voeg nieuwe taken toe voor de geselecteerde dag
-    for (int i = 0; i < takenVoorDag.Count; i++)
+    taakItems.Clear();
+    zichtbareTaken.Clear();
+
+    foreach (var taak in takenVoorDag)
     {
-        MaakTaakItem(takenVoorDag[i]);
+        zichtbareTaken.Add(taak);
+        MaakTaakItem(taak);
     }
 }
+
+
 
 
 
