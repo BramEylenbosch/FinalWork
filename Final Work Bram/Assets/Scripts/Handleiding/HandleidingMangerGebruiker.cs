@@ -67,6 +67,7 @@ public class HandleidingManagerGebruiker : MonoBehaviour
     {
         using UnityWebRequest www = UnityWebRequestTexture.GetTexture(url);
         yield return www.SendWebRequest();
+        Debug.Log("Downloading: " + url);
 
         if (www.result != UnityWebRequest.Result.Success)
         {
