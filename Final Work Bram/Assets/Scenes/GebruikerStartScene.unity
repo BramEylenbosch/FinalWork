@@ -3056,6 +3056,22 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
       value: GebruikerStartScene
       objectReference: {fileID: 0}
+    - target: {fileID: 8639313825319453960, guid: a12de977eb5802a45ac4adb91e746bab, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 19d7d9ca1b4e05b41b5c3c7ce4de19d6, type: 3}
+    - target: {fileID: 8848471136339199933, guid: a12de977eb5802a45ac4adb91e746bab, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 303.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8848471136339199933, guid: a12de977eb5802a45ac4adb91e746bab, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 83.9
+      objectReference: {fileID: 0}
+    - target: {fileID: 8848471136339199933, guid: a12de977eb5802a45ac4adb91e746bab, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 334.3
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
