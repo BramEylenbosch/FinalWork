@@ -17,7 +17,7 @@ public static class UIConfirmDialog
         canvas.sortingOrder = 10000;
 
         var scaler = _overlay.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
         scaler.referenceResolution = new Vector2(1080, 1920);
         scaler.matchWidthOrHeight = 0.5f;
 

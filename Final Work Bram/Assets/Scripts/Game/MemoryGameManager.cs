@@ -172,9 +172,9 @@ void Start()
 
     public void AddPersonalPhotoData(PersonalPhotoData data)
     {
-        if (personalPhotosData.Count >= 8)
+        if (personalPhotosData.Count >= 6)
         {
-            Debug.Log("Maximaal 8 foto's toegestaan.");
+            Debug.Log("Maximaal 6 foto's toegestaan.");
             return;
         }
 
