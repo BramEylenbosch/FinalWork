@@ -311,7 +311,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: TakenlijstMantel
+          m_StringArgument: NotitiesGebruiker
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &28420111
@@ -447,7 +447,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: MantelHandleiding
+          m_StringArgument: HerinneringenGebruiker
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &33255810
@@ -2940,6 +2940,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1449512079}
+    - target: {fileID: 2913870146695688487, guid: a12de977eb5802a45ac4adb91e746bab, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
+      value: NotitiesGebruiker
+      objectReference: {fileID: 0}
     - target: {fileID: 4335036345718532969, guid: a12de977eb5802a45ac4adb91e746bab, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
@@ -2966,7 +2970,7 @@ PrefabInstance:
       objectReference: {fileID: 1449512079}
     - target: {fileID: 5895277157410556691, guid: a12de977eb5802a45ac4adb91e746bab, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
-      value: HerinneringenMantel
+      value: HerinneringenGebruiker
       objectReference: {fileID: 0}
     - target: {fileID: 6333496780780091094, guid: a12de977eb5802a45ac4adb91e746bab, type: 3}
       propertyPath: m_Pivot.x

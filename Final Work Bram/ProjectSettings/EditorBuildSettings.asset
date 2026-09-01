@@ -50,6 +50,15 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/GebruikerStartScene.unity
     guid: daf10aecc772a574c8e5cb8ec5eef43b
+  - enabled: 1
+    path: Assets/Scenes/NotitiesGebruiker.unity
+    guid: c93cd2c3315cf9942b8d0cf5ead2d3bd
+  - enabled: 1
+    path: Assets/Scenes/HerinneringenGebruiker.unity
+    guid: b5bf36ead76b0214ca3c164eb181dae5
+  - enabled: 1
+    path: Assets/Scenes/HerinneringenMantel.unity
+    guid: c49413a40019b7644afde65ba638104e
   - enabled: 0
     path: Assets/Scenes/Handleiding.unity
     guid: 40727817ef7366240a562583d032e1df
